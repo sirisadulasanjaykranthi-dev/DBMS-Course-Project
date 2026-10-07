@@ -1,0 +1,291 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard{% endblock %}
+
+{% block content %}
+<!-- Page Header -->
+<div class="page-header-box d-flex flex-column flex-md-row align-items-md-center justify-content-between gap-3">
+    <div>
+        <div class="d-flex align-items-center gap-2">
+            <h1 class="page-title mb-0">Solar Installation &amp; Maintenance Management</h1>
+        </div>
+        <p class="page-subtitle mt-1">Real-time MySQL Relational DBMS Dashboard &bull; Live Metric Counts &bull; Transaction Monitoring</p>
+    </div>
+    <div class="d-flex flex-wrap gap-2">
+        <a href="{{ url_for('customer_add') }}" class="btn btn-accent btn-sm d-flex align-items-center">
+            <i class="bi bi-person-plus-fill me-1"></i> Add Customer
+        </a>
+        <a href="{{ url_for('installation_add') }}" class="btn btn-primary-custom btn-sm d-flex align-items-center">
+            <i class="bi bi-plus-circle-fill me-1"></i> New Installation
+        </a>
+        <a href="{{ url_for('reports_page') }}" class="btn btn-outline-dark btn-sm d-flex align-items-center">
+            <i class="bi bi-code-slash me-1"></i> SQL Lab (Queries)
+        </a>
+        <a href="{{ url_for('random_data_page') }}" class="btn btn-outline-primary btn-sm d-flex align-items-center">
+            <i class="bi bi-shuffle me-1"></i> Random SQL Data
+        </a>
+    </div>
+</div>
+
+<!-- Database Notice if uninitialized or error -->
+{% if db_error %}
+<div class="alert alert-danger shadow-sm d-flex align-items-start gap-3 mb-4">
+    <i class="bi bi-exclamation-triangle-fill fs-3 text-danger mt-1"></i>
+    <div>
+        <h5 class="alert-heading mb-1">MySQL Connection Notice</h5>
+        <p class="mb-2">{{ db_error }}</p>
+        <p class="mb-0">Please visit the <a href="{{ url_for('db_setup') }}" class="fw-bold text-danger text-decoration-underline">Database Setup &amp; Status Page</a> to check your MySQL configuration or run the initial schema.</p>
+    </div>
+</div>
+{% endif %}
+
+<!-- KPI Cards Row (Retrieved via SELECT COUNT(*) from MySQL) -->
+<div class="row g-3 mb-4">
+    <!-- Customers -->
+    <div class="col-sm-6 col-xl-2">
+        <div class="metric-card">
+            <div class="d-flex align-items-center justify-content-between">
+                <div>
+                    <div class="metric-label">Customers</div>
+                    <div class="metric-value">{{ metrics.customers }}</div>
+                </div>
+                <div class="metric-icon-box icon-blue">
+                    <i class="bi bi-people-fill"></i>
+                </div>
+            </div>
+            <a href="{{ url_for('customers_list') }}" class="text-decoration-none small text-primary fw-semibold mt-2 d-inline-block">
+                View Customers <i class="bi bi-arrow-right"></i>
+            </a>
+        </div>
+    </div>
+
+    <!-- Employees -->
+    <div class="col-sm-6 col-xl-2">
+        <div class="metric-card">
+            <div class="d-flex align-items-center justify-content-between">
+                <div>
+                    <div class="metric-label">Employees</div>
+                    <div class="metric-value">{{ metrics.employees }}</div>
+                </div>
+                <div class="metric-icon-box icon-purple">
+                    <i class="bi bi-person-badge-fill"></i>
+                </div>
+            </div>
+            <a href="{{ url_for('employees_list') }}" class="text-decoration-none small text-primary fw-semibold mt-2 d-inline-block">
+                View Staff <i class="bi bi-arrow-right"></i>
+            </a>
+        </div>
+    </div>
+
+    <!-- Installations -->
+    <div class="col-sm-6 col-xl-2">
+        <div class="metric-card">
+            <div class="d-flex align-items-center justify-content-between">
+                <div>
+                    <div class="metric-label">Installations</div>
+                    <div class="metric-value">{{ metrics.installations }}</div>
+                </div>
+                <div class="metric-icon-box icon-amber">
+                    <i class="bi bi-sun-fill"></i>
+                </div>
+            </div>
+            <a href="{{ url_for('installations_list') }}" class="text-decoration-none small text-primary fw-semibold mt-2 d-inline-block">
+                View Projects <i class="bi bi-arrow-right"></i>
+            </a>
+        </div>
+    </div>
+
+    <!-- Equipment -->
+    <div class="col-sm-6 col-xl-2">
+        <div class="metric-card">
+            <div class="d-flex align-items-center justify-content-between">
+                <div>
+                    <div class="metric-label">Equipment</div>
+                    <div class="metric-value">{{ metrics.equipment }}</div>
+                </div>
+                <div class="metric-icon-box icon-indigo">
+                    <i class="bi bi-cpu-fill"></i>
+                </div>
+            </div>
+            <a href="{{ url_for('equipment_list') }}" class="text-decoration-none small text-primary fw-semibold mt-2 d-inline-block">
+                View Inventory <i class="bi bi-arrow-right"></i>
+            </a>
+        </div>
+    </div>
+
+    <!-- Maintenance -->
+    <div class="col-sm-6 col-xl-2">
+        <div class="metric-card">
+            <div class="d-flex align-items-center justify-content-between">
+                <div>
+                    <div class="metric-label">Maintenance</div>
+                    <div class="metric-value">{{ metrics.maintenance }}</div>
+                </div>
+                <div class="metric-icon-box icon-rose">
+                    <i class="bi bi-wrench-adjustable"></i>
+                </div>
+            </div>
+            <a href="{{ url_for('maintenance_list') }}" class="text-decoration-none small text-primary fw-semibold mt-2 d-inline-block">
+                View Visits <i class="bi bi-arrow-right"></i>
+            </a>
+        </div>
+    </div>
+
+    <!-- Payments -->
+    <div class="col-sm-6 col-xl-2">
+        <div class="metric-card">
+            <div class="d-flex align-items-center justify-content-between">
+                <div>
+                    <div class="metric-label">Payments</div>
+                    <div class="metric-value">{{ metrics.payments }}</div>
+                </div>
+                <div class="metric-icon-box icon-green">
+                    <i class="bi bi-cash-stack"></i>
+                </div>
+            </div>
+            <a href="{{ url_for('payments_list') }}" class="text-decoration-none small text-primary fw-semibold mt-2 d-inline-block">
+                View Ledger <i class="bi bi-arrow-right"></i>
+            </a>
+        </div>
+    </div>
+</div>
+
+<!-- Secondary Financial Summary Row -->
+<div class="row g-3 mb-4">
+    <div class="col-md-6">
+        <div class="card border-0 shadow-sm p-3 bg-white rounded-3">
+            <div class="d-flex align-items-center justify-content-between">
+                <div>
+                    <div class="text-muted small fw-bold text-uppercase">Total Project Value (Installation Sum)</div>
+                    <div class="fs-3 fw-bold text-primary mt-1">₹{{ "{:,.2f}".format(metrics.total_revenue) }}</div>
+                    <div class="small text-muted">Aggregated via <code>SELECT SUM(Cost) FROM Installation</code></div>
+                </div>
+                <div class="p-3 bg-primary-subtle text-primary rounded-circle">
+                    <i class="bi bi-graph-up-arrow fs-3"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6">
+        <div class="card border-0 shadow-sm p-3 bg-white rounded-3">
+            <div class="d-flex align-items-center justify-content-between">
+                <div>
+                    <div class="text-muted small fw-bold text-uppercase">Total Revenue Realized (Payments Sum)</div>
+                    <div class="fs-3 fw-bold text-success mt-1">₹{{ "{:,.2f}".format(metrics.total_collected) }}</div>
+                    <div class="small text-muted">Aggregated via <code>SELECT SUM(Amount) FROM Payment</code></div>
+                </div>
+                <div class="p-3 bg-success-subtle text-success rounded-circle">
+                    <i class="bi bi-wallet2 fs-3"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Live Tables Section (JOIN Demonstrations) -->
+<div class="row g-4">
+    <!-- Recent Installations -->
+    <div class="col-lg-7">
+        <div class="custom-card">
+            <div class="card-header-clean">
+                <div class="fw-bold d-flex align-items-center">
+                    <i class="bi bi-tools text-primary me-2"></i> Recent Solar Installations
+                </div>
+                <a href="{{ url_for('installations_list') }}" class="btn btn-outline-primary btn-sm">All Installations</a>
+            </div>
+            <div class="table-responsive">
+                <table class="table table-custom table-hover mb-0">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Customer</th>
+                            <th>Assigned Tech</th>
+                            <th>Capacity</th>
+                            <th>Status</th>
+                            <th>Cost</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% if recent_installations %}
+                            {% for inst in recent_installations %}
+                            <tr>
+                                <td><span class="badge bg-secondary">#{{ inst.InstallID }}</span></td>
+                                <td class="fw-semibold">{{ inst.CustomerName }}</td>
+                                <td>{{ inst.EmployeeName }}</td>
+                                <td>{{ inst.Capacity }}</td>
+                                <td>
+                                    {% if inst.Status == 'Completed' %}
+                                        <span class="badge badge-status status-completed">Completed</span>
+                                    {% elif inst.Status == 'In Progress' %}
+                                        <span class="badge badge-status status-inprogress">In Progress</span>
+                                    {% elif inst.Status == 'Pending' %}
+                                        <span class="badge badge-status status-pending">Pending</span>
+                                    {% else %}
+                                        <span class="badge badge-status status-scheduled">{{ inst.Status }}</span>
+                                    {% endif %}
+                                </td>
+                                <td>₹{{ "{:,.2f}".format(inst.Cost) }}</td>
+                                <td>
+                                    <a href="{{ url_for('installation_view', install_id=inst.InstallID) }}" class="btn btn-sm btn-outline-info py-0 px-2">
+                                        <i class="bi bi-eye"></i>
+                                    </a>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        {% else %}
+                            <tr>
+                                <td colspan="7" class="text-center py-4 text-muted">
+                                    <i class="bi bi-inbox fs-2 d-block mb-1"></i> No installation projects found in MySQL.
+                                </td>
+                            </tr>
+                        {% endif %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Recent Maintenance Visits -->
+    <div class="col-lg-5">
+        <div class="custom-card">
+            <div class="card-header-clean">
+                <div class="fw-bold d-flex align-items-center">
+                    <i class="bi bi-wrench-adjustable text-danger me-2"></i> Recent Maintenance Visits
+                </div>
+                <a href="{{ url_for('maintenance_list') }}" class="btn btn-outline-secondary btn-sm">All Visits</a>
+            </div>
+            <div class="table-responsive">
+                <table class="table table-custom table-hover mb-0">
+                    <thead>
+                        <tr>
+                            <th>Visit Date</th>
+                            <th>Customer</th>
+                            <th>Description</th>
+                            <th>Cost</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% if recent_maintenance %}
+                            {% for m in recent_maintenance %}
+                            <tr>
+                                <td class="text-nowrap small">{{ m.VisitDate }}</td>
+                                <td class="fw-semibold small">{{ m.CustomerName }}</td>
+                                <td class="small text-truncate" style="max-width: 160px;" title="{{ m.WorkDescription }}">{{ m.WorkDescription }}</td>
+                                <td class="small fw-bold">₹{{ "{:,.2f}".format(m.Cost) }}</td>
+                            </tr>
+                            {% endfor %}
+                        {% else %}
+                            <tr>
+                                <td colspan="4" class="text-center py-4 text-muted">
+                                    <i class="bi bi-inbox fs-2 d-block mb-1"></i> No maintenance visits recorded.
+                                </td>
+                            </tr>
+                        {% endif %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
