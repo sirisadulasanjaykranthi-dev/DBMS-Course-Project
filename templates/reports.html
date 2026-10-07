@@ -1,0 +1,229 @@
+{% extends "base.html" %}
+
+{% block title %}DBMS SQL Lab &amp; Advanced Queries{% endblock %}
+
+{% block content %}
+<!-- Page Header -->
+<div class="page-header-box d-flex flex-column flex-md-row align-items-md-center justify-content-between gap-3">
+    <div>
+        <div class="d-flex align-items-center gap-2">
+            <h1 class="page-title mb-0">DBMS SQL Demonstration Lab</h1>
+            <span class="badge bg-warning text-dark fw-bold px-2 py-1">Presentation-III Showcase</span>
+        </div>
+        <p class="page-subtitle mt-1">Live execution of complex MySQL operations: <code>INNER JOIN</code>, <code>LEFT JOIN</code>, <code>GROUP BY</code>, <code>ORDER BY</code>, <code>SUM()</code>, <code>COUNT()</code></p>
+    </div>
+    <div class="d-flex gap-2">
+        <a href="{{ url_for('dashboard') }}" class="btn btn-outline-secondary btn-sm">
+            <i class="bi bi-speedometer2 me-1"></i> Dashboard
+        </a>
+    </div>
+</div>
+
+<!-- Viva Quick Reference Banner -->
+<div class="alert alert-info py-2 px-3 small d-flex align-items-center mb-4 shadow-sm">
+    <i class="bi bi-lightbulb-fill text-warning me-2 fs-4"></i>
+    <div>
+        <strong>Examiner / Viva Demonstration:</strong>
+        Each card below directly runs an actual parameterized SQL statement on the MySQL engine and returns live result tuples. Compare these results with MySQL Workbench queries to prove database synchronicity.
+    </div>
+</div>
+
+<!-- Report 1: Multi-Table Relational JOIN -->
+<div class="custom-card mb-4">
+    <div class="card-header-clean bg-light d-flex justify-content-between align-items-center">
+        <div class="d-flex align-items-center gap-2">
+            <span class="badge bg-primary px-2 py-1 fs-6">JOIN</span>
+            <h5 class="mb-0 fw-bold">{{ reports.join_installations.title }}</h5>
+        </div>
+        <span class="badge bg-secondary-subtle text-dark border">{{ reports.join_installations.data|length }} Rows Returned</span>
+    </div>
+    <div class="p-3">
+        <div class="sql-query-box mb-3">
+            <pre class="mb-0 text-white font-monospace"><code>{{ reports.join_installations.query }}</code></pre>
+        </div>
+        <div class="table-responsive">
+            <table class="table table-custom table-sm table-hover mb-0">
+                <thead>
+                    <tr>
+                        <th>Install ID</th>
+                        <th>Customer Name</th>
+                        <th>Contact</th>
+                        <th>Assigned Engineer</th>
+                        <th>Capacity</th>
+                        <th>Status</th>
+                        <th class="text-end">Project Cost</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for row in reports.join_installations.data %}
+                    <tr>
+                        <td><span class="badge bg-dark-subtle text-dark border">#{{ row.InstallID }}</span></td>
+                        <td class="fw-semibold">{{ row.CustomerName }}</td>
+                        <td class="small text-muted">{{ row.Phone }}</td>
+                        <td><span class="badge bg-info-subtle text-info-emphasis border">{{ row.Engineer }}</span></td>
+                        <td>{{ row.Capacity }}</td>
+                        <td>
+                            {% if row.Status == 'Completed' %}
+                                <span class="badge bg-success-subtle text-success border">Completed</span>
+                            {% elif row.Status == 'In Progress' %}
+                                <span class="badge bg-primary-subtle text-primary border">In Progress</span>
+                            {% else %}
+                                <span class="badge bg-warning-subtle text-warning-emphasis border">{{ row.Status }}</span>
+                            {% endif %}
+                        </td>
+                        <td class="text-end fw-bold">₹{{ "{:,.2f}".format(row.Cost) }}</td>
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td colspan="7" class="text-center text-muted py-3">No installation records found.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<div class="row g-4 mb-4">
+    <!-- Report 2: Maintenance Cost Analysis (GROUP BY & SUM) -->
+    <div class="col-lg-6">
+        <div class="custom-card h-100">
+            <div class="card-header-clean bg-light d-flex justify-content-between align-items-center">
+                <div class="d-flex align-items-center gap-2">
+                    <span class="badge bg-danger px-2 py-1 fs-6">GROUP BY</span>
+                    <h6 class="mb-0 fw-bold">Maintenance Cost Analysis by Project</h6>
+                </div>
+            </div>
+            <div class="p-3">
+                <div class="sql-query-box mb-3">
+                    <pre class="mb-0 text-white font-monospace small"><code>{{ reports.maint_cost.query }}</code></pre>
+                </div>
+                <div class="table-responsive">
+                    <table class="table table-custom table-sm table-hover mb-0">
+                        <thead>
+                            <tr>
+                                <th>Installation ID</th>
+                                <th class="text-center">Total Visits</th>
+                                <th class="text-end">Total Maintenance Cost</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for row in reports.maint_cost.data %}
+                            <tr>
+                                <td>
+                                    <a href="{{ url_for('installation_view', install_id=row.InstallID) }}" class="fw-semibold text-decoration-none">
+                                        Project #{{ row.InstallID }}
+                                    </a>
+                                </td>
+                                <td class="text-center">
+                                    <span class="badge bg-primary rounded-pill">{{ row.TotalVisits }}</span>
+                                </td>
+                                <td class="text-end fw-bold text-danger">₹{{ "{:,.2f}".format(row.TotalMaintenanceCost) }}</td>
+                            </tr>
+                            {% else %}
+                            <tr>
+                                <td colspan="3" class="text-center text-muted py-3">No maintenance visits recorded.</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Report 3: Technician Workload Distribution (LEFT JOIN & COUNT) -->
+    <div class="col-lg-6">
+        <div class="custom-card h-100">
+            <div class="card-header-clean bg-light d-flex justify-content-between align-items-center">
+                <div class="d-flex align-items-center gap-2">
+                    <span class="badge bg-success px-2 py-1 fs-6">LEFT JOIN</span>
+                    <h6 class="mb-0 fw-bold">Staff Project Workload Distribution</h6>
+                </div>
+            </div>
+            <div class="p-3">
+                <div class="sql-query-box mb-3">
+                    <pre class="mb-0 text-white font-monospace small"><code>{{ reports.tech_workload.query }}</code></pre>
+                </div>
+                <div class="table-responsive">
+                    <table class="table table-custom table-sm table-hover mb-0">
+                        <thead>
+                            <tr>
+                                <th>Employee</th>
+                                <th>Designation</th>
+                                <th class="text-center">Assigned Projects</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for row in reports.tech_workload.data %}
+                            <tr>
+                                <td class="fw-semibold">{{ row.EmployeeName }}</td>
+                                <td class="small text-muted">{{ row.Role }}</td>
+                                <td class="text-center">
+                                    <span class="badge bg-success rounded-pill">{{ row.TotalProjects }}</span>
+                                </td>
+                            </tr>
+                            {% else %}
+                            <tr>
+                                <td colspan="3" class="text-center text-muted py-3">No employee records found.</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Report 4: Revenue Collected by Payment Mode -->
+<div class="custom-card mb-4">
+    <div class="card-header-clean bg-light d-flex justify-content-between align-items-center">
+        <div class="d-flex align-items-center gap-2">
+            <span class="badge bg-warning text-dark px-2 py-1 fs-6">AGGREGATION</span>
+            <h5 class="mb-0 fw-bold">{{ reports.revenue_mode.title }}</h5>
+        </div>
+    </div>
+    <div class="p-3">
+        <div class="sql-query-box mb-3">
+            <pre class="mb-0 text-white font-monospace"><code>{{ reports.revenue_mode.query }}</code></pre>
+        </div>
+        <div class="table-responsive">
+            <table class="table table-custom table-hover mb-0">
+                <thead>
+                    <tr>
+                        <th>Payment Mode</th>
+                        <th class="text-center">Transactions Count</th>
+                        <th class="text-end">Total Amount Collected</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for row in reports.revenue_mode.data %}
+                    <tr>
+                        <td class="fw-bold">
+                            {% if row.Mode == 'UPI' %}
+                                <i class="bi bi-qr-code text-primary me-2"></i> UPI
+                            {% elif row.Mode == 'Bank Transfer' %}
+                                <i class="bi bi-bank text-info me-2"></i> Bank Transfer
+                            {% elif row.Mode == 'Card' %}
+                                <i class="bi bi-credit-card text-success me-2"></i> Credit / Debit Card
+                            {% else %}
+                                <i class="bi bi-cash text-secondary me-2"></i> Cash
+                            {% endif %}
+                        </td>
+                        <td class="text-center">
+                            <span class="badge bg-secondary-subtle text-dark border px-2 py-1">{{ row.Transactions }}</span>
+                        </td>
+                        <td class="text-end fw-bold text-success fs-6">₹{{ "{:,.2f}".format(row.TotalCollected) }}</td>
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td colspan="3" class="text-center text-muted py-3">No payment records found.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}
