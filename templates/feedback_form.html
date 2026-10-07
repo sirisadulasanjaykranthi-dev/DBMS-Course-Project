@@ -1,0 +1,86 @@
+{% extends "base.html" %}
+
+{% block title %}{{ action }} Feedback{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-lg-8 col-xl-7">
+        <!-- Page Header -->
+        <div class="page-header-box d-flex align-items-center justify-content-between mb-3">
+            <div>
+                <h1 class="page-title">{{ action }} Feedback</h1>
+                <p class="page-subtitle">
+                    Record client review and rating (1–5) linked to a solar installation in MySQL
+                </p>
+            </div>
+            <a href="{{ url_for('feedback_list') }}" class="btn btn-outline-secondary btn-sm">
+                <i class="bi bi-arrow-left me-1"></i> Back to Feedback List
+            </a>
+        </div>
+
+        <!-- SQL Operation Explanation Box (For Viva & Presentation) -->
+        <div class="sql-query-box mb-4">
+            <span class="text-warning fw-bold">-- Target DBMS Operation:</span><br>
+            INSERT INTO Feedback (InstallID, Rating, Comments)<br>
+            VALUES (&lt;InstallID&gt;, &lt;Rating 1-5&gt;, '&lt;Comments&gt;');
+        </div>
+
+        <!-- Form Card -->
+        <div class="form-card">
+            <form method="POST">
+                <!-- Installation Dropdown (Foreign Key) -->
+                <div class="mb-3">
+                    <label for="install_id" class="form-label">Solar Installation Project (Foreign Key: InstallID) <span class="text-danger">*</span></label>
+                    <div class="input-group">
+                        <span class="input-group-text"><i class="bi bi-tools"></i></span>
+                        <select class="form-select" id="install_id" name="install_id" required autofocus>
+                            <option value="">-- Select Installation Project --</option>
+                            {% for inst in installations %}
+                                <option value="{{ inst.InstallID }}" {% if feedback.install_id|string == inst.InstallID|string or feedback.InstallID|string == inst.InstallID|string %}selected{% endif %}>
+                                    Project #{{ inst.InstallID }} &bull; Customer: {{ inst.CustomerName }} ({{ inst.Capacity }})
+                                </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="form-text">Links to the primary key <code>InstallID</code> in the <code>Installation</code> table.</div>
+                </div>
+
+                <!-- Rating Field -->
+                <div class="mb-3">
+                    <label for="rating" class="form-label">Customer Rating (1 to 5 Stars) <span class="text-danger">*</span></label>
+                    <div class="input-group">
+                        <span class="input-group-text text-warning"><i class="bi bi-star-fill"></i></span>
+                        <select class="form-select" id="rating" name="rating" required>
+                            <option value="">-- Choose Rating --</option>
+                            <option value="5" {% if feedback.rating|string == '5' or feedback.Rating|string == '5' %}selected{% endif %}>⭐⭐⭐⭐⭐ 5 Stars (Outstanding Experience)</option>
+                            <option value="4" {% if feedback.rating|string == '4' or feedback.Rating|string == '4' %}selected{% endif %}>⭐⭐⭐⭐ 4 Stars (Good Quality &amp; Timely)</option>
+                            <option value="3" {% if feedback.rating|string == '3' or feedback.Rating|string == '3' %}selected{% endif %}>⭐⭐⭐ 3 Stars (Satisfactory)</option>
+                            <option value="2" {% if feedback.rating|string == '2' or feedback.Rating|string == '2' %}selected{% endif %}>⭐⭐ 2 Stars (Needs Improvement)</option>
+                            <option value="1" {% if feedback.rating|string == '1' or feedback.Rating|string == '1' %}selected{% endif %}>⭐ 1 Star (Unsatisfactory)</option>
+                        </select>
+                    </div>
+                    <div class="form-text">Enforced by MySQL constraint: <code>CHECK (Rating BETWEEN 1 AND 5)</code>.</div>
+                </div>
+
+                <!-- Comments Field -->
+                <div class="mb-4">
+                    <label for="comments" class="form-label">Client Feedback &amp; Comments</label>
+                    <div class="input-group">
+                        <span class="input-group-text"><i class="bi bi-chat-left-text"></i></span>
+                        <textarea class="form-control" id="comments" name="comments" rows="3" 
+                                  placeholder="e.g. Excellent rooftop installation! Electricity bill reduced by 80%. Highly recommended.">{{ feedback.comments or feedback.Comments or '' }}</textarea>
+                    </div>
+                </div>
+
+                <!-- Action Buttons -->
+                <div class="d-flex justify-content-end gap-2 pt-2 border-top">
+                    <a href="{{ url_for('feedback_list') }}" class="btn btn-light px-4">Cancel</a>
+                    <button type="submit" class="btn btn-primary-custom px-4">
+                        <i class="bi bi-check-circle-fill me-1"></i> Submit Feedback (INSERT)
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
