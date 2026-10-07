@@ -1,0 +1,143 @@
+{% extends "base.html" %}
+
+{% block title %}Installation #{{ installation.InstallID }}{% endblock %}
+
+{% block content %}
+<div class="page-header-box d-flex flex-column flex-md-row align-items-md-center justify-content-between gap-3">
+    <div>
+        <h1 class="page-title">Installation Project #{{ installation.InstallID }}</h1>
+        <p class="page-subtitle">Customer: <strong>{{ installation.CustomerName }}</strong> &bull; Capacity: {{ installation.Capacity }} &bull; Status: {{ installation.Status }}</p>
+    </div>
+    <div class="d-flex gap-2">
+        <a href="{{ url_for('installation_edit', install_id=installation.InstallID) }}" class="btn btn-outline-secondary btn-sm">
+            <i class="bi bi-pencil-square me-1"></i> Edit Project
+        </a>
+        <a href="{{ url_for('installations_list') }}" class="btn btn-outline-primary btn-sm">
+            <i class="bi bi-arrow-left me-1"></i> Back to Projects
+        </a>
+    </div>
+</div>
+
+<div class="row g-4 mb-4">
+    <!-- Project Specs Card -->
+    <div class="col-lg-5">
+        <div class="custom-card p-4">
+            <div class="d-flex align-items-center justify-content-between mb-3">
+                <h5 class="fw-bold mb-0">Project Specification</h5>
+                {% if installation.Status == 'Completed' %}
+                    <span class="badge badge-status status-completed">Completed</span>
+                {% elif installation.Status == 'In Progress' %}
+                    <span class="badge badge-status status-inprogress">In Progress</span>
+                {% elif installation.Status == 'Pending' %}
+                    <span class="badge badge-status status-pending">Pending</span>
+                {% else %}
+                    <span class="badge badge-status status-scheduled">{{ installation.Status }}</span>
+                {% endif %}
+            </div>
+            <hr>
+            <div class="row g-3">
+                <div class="col-6">
+                    <span class="text-muted small">System Capacity</span>
+                    <div class="fw-bold fs-6">{{ installation.Capacity }}</div>
+                </div>
+                <div class="col-6">
+                    <span class="text-muted small">Installation Date</span>
+                    <div class="fw-bold fs-6">{{ installation.InstallationDate }}</div>
+                </div>
+                <div class="col-12">
+                    <span class="text-muted small">Contracted Cost</span>
+                    <div class="fw-bold fs-5 text-primary">₹{{ "{:,.2f}".format(installation.Cost) }}</div>
+                </div>
+            </div>
+
+            <div class="mt-4 pt-3 border-top">
+                <h6 class="fw-bold text-muted small text-uppercase mb-2">Customer Information</h6>
+                <div><strong>{{ installation.CustomerName }}</strong></div>
+                <div class="small text-muted"><i class="bi bi-telephone me-1"></i>{{ installation.CustomerPhone }}</div>
+                <div class="small text-muted"><i class="bi bi-envelope me-1"></i>{{ installation.CustomerEmail }}</div>
+                <div class="small text-muted"><i class="bi bi-geo-alt me-1"></i>{{ installation.Address }}</div>
+            </div>
+
+            <div class="mt-3 pt-3 border-top">
+                <h6 class="fw-bold text-muted small text-uppercase mb-2">Assigned Personnel</h6>
+                <div><strong>{{ installation.EmployeeName }}</strong> ({{ installation.EmployeeRole }})</div>
+                <div class="small text-muted"><i class="bi bi-telephone me-1"></i>{{ installation.EmployeePhone }}</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Related Maintenance and Feedback -->
+    <div class="col-lg-7">
+        <!-- Maintenance Visits for this Project -->
+        <div class="custom-card mb-4">
+            <div class="card-header-clean">
+                <div class="fw-bold d-flex align-items-center">
+                    <i class="bi bi-wrench-adjustable text-danger me-2"></i> Maintenance History (Child Table)
+                </div>
+                <a href="{{ url_for('maintenance_add') }}" class="btn btn-sm btn-outline-danger">+ Add Visit</a>
+            </div>
+            <div class="table-responsive">
+                <table class="table table-custom table-hover mb-0">
+                    <thead>
+                        <tr>
+                            <th>Maint ID</th>
+                            <th>Visit Date</th>
+                            <th>Description</th>
+                            <th>Cost</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% if maintenance %}
+                            {% for m in maintenance %}
+                            <tr>
+                                <td><span class="badge bg-secondary">#{{ m.MaintID }}</span></td>
+                                <td>{{ m.VisitDate }}</td>
+                                <td class="small">{{ m.WorkDescription }}</td>
+                                <td class="fw-bold">₹{{ "{:,.2f}".format(m.Cost) }}</td>
+                            </tr>
+                            {% endfor %}
+                        {% else %}
+                            <tr>
+                                <td colspan="4" class="text-center py-3 text-muted">No maintenance visits recorded for this project yet.</td>
+                            </tr>
+                        {% endif %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Feedback for this Project -->
+        <div class="custom-card">
+            <div class="card-header-clean">
+                <div class="fw-bold d-flex align-items-center">
+                    <i class="bi bi-star-fill text-warning me-2"></i> Customer Feedback (Child Table)
+                </div>
+                <a href="{{ url_for('feedback_add') }}" class="btn btn-sm btn-outline-warning">+ Add Feedback</a>
+            </div>
+            <div class="p-3">
+                {% if feedback %}
+                    {% for f in feedback %}
+                    <div class="p-3 bg-light rounded mb-2 border">
+                        <div class="d-flex align-items-center justify-content-between mb-1">
+                            <div>
+                                {% for s in range(f.Rating) %}
+                                    <i class="bi bi-star-fill text-warning"></i>
+                                {% endfor %}
+                                {% for s in range(5 - f.Rating) %}
+                                    <i class="bi bi-star text-muted"></i>
+                                {% endfor %}
+                                <span class="ms-2 fw-bold text-dark">{{ f.Rating }}/5</span>
+                            </div>
+                            <small class="text-muted">{{ f.CreatedAt }}</small>
+                        </div>
+                        <p class="mb-0 text-secondary">{{ f.Comments }}</p>
+                    </div>
+                    {% endfor %}
+                {% else %}
+                    <p class="text-center text-muted py-3 mb-0">No customer reviews recorded yet.</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
