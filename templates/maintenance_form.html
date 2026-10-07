@@ -1,0 +1,93 @@
+{% extends "base.html" %}
+
+{% block title %}{{ action }} Maintenance{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-lg-7 col-xl-6">
+        <div class="page-header-box d-flex align-items-center justify-content-between mb-3">
+            <div>
+                <h1 class="page-title">{{ action }} Maintenance Record</h1>
+                <p class="page-subtitle">
+                    {% if action == 'Add' %}
+                        Log a routine servicing or repair visit in MySQL <code>Maintenance</code> table
+                    {% else %}
+                        Update maintenance details (Visit #{{ visit.MaintID }})
+                    {% endif %}
+                </p>
+            </div>
+            <a href="{{ url_for('maintenance_list') }}" class="btn btn-outline-secondary btn-sm">
+                <i class="bi bi-arrow-left me-1"></i> Back to List
+            </a>
+        </div>
+
+        <div class="sql-query-box mb-4">
+            <span class="text-warning fw-bold">-- Target DBMS Operation:</span><br>
+            {% if action == 'Add' %}
+                INSERT INTO Maintenance (InstallID, VisitDate, WorkDescription, Cost)<br>
+                VALUES (&lt;InstallID&gt;, '&lt;VisitDate&gt;', '&lt;WorkDescription&gt;', &lt;Cost&gt;);
+            {% else %}
+                UPDATE Maintenance<br>
+                SET InstallID = &lt;InstallID&gt;, VisitDate = '&lt;VisitDate&gt;',<br>
+                    WorkDescription = '&lt;WorkDescription&gt;', Cost = &lt;Cost&gt;<br>
+                WHERE MaintID = {{ visit.MaintID }};
+            {% endif %}
+        </div>
+
+        <div class="form-card">
+            <form method="POST">
+                <!-- Installation Dropdown (Foreign Key) -->
+                <div class="mb-3">
+                    <label for="install_id" class="form-label">Installation Project (Foreign Key) <span class="text-danger">*</span></label>
+                    <select class="form-select" id="install_id" name="install_id" required>
+                        <option value="">-- Select Installation --</option>
+                        {% for i in installations %}
+                            <option value="{{ i.InstallID }}" {% if visit.InstallID|string == i.InstallID|string %}selected{% endif %}>
+                                Project #{{ i.InstallID }} - {{ i.CustomerName }} ({{ i.Capacity }})
+                            </option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div class="row g-3 mb-3">
+                    <!-- Visit Date -->
+                    <div class="col-md-6">
+                        <label for="visit_date" class="form-label">Service Visit Date <span class="text-danger">*</span></label>
+                        <input type="date" class="form-control" id="visit_date" name="visit_date" 
+                               value="{{ visit.VisitDate or '' }}" required>
+                    </div>
+
+                    <!-- Service Cost -->
+                    <div class="col-md-6">
+                        <label for="cost" class="form-label">Maintenance Cost (₹ INR) <span class="text-danger">*</span></label>
+                        <div class="input-group">
+                            <span class="input-group-text">₹</span>
+                            <input type="number" step="0.01" class="form-control" id="cost" name="cost" 
+                                   value="{{ visit.Cost or '' }}" 
+                                   placeholder="2500.00" required>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Work Description -->
+                <div class="mb-4">
+                    <label for="work_description" class="form-label">Work Description / Diagnostics <span class="text-danger">*</span></label>
+                    <textarea class="form-control" id="work_description" name="work_description" rows="3" 
+                              placeholder="e.g. Panel washing, junction box inspection, tightening MC4 connections, checking inverter efficiency." required>{{ visit.WorkDescription or '' }}</textarea>
+                </div>
+
+                <div class="d-flex justify-content-end gap-2 pt-2 border-top">
+                    <a href="{{ url_for('maintenance_list') }}" class="btn btn-light px-4">Cancel</a>
+                    <button type="submit" class="btn btn-primary-custom px-4">
+                        {% if action == 'Add' %}
+                            <i class="bi bi-check-circle-fill me-1"></i> Log Maintenance (INSERT)
+                        {% else %}
+                            <i class="bi bi-arrow-repeat me-1"></i> Update Record (UPDATE)
+                        {% endif %}
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
