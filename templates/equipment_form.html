@@ -1,0 +1,86 @@
+{% extends "base.html" %}
+
+{% block title %}{{ action }} Equipment{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-lg-7 col-xl-6">
+        <div class="page-header-box d-flex align-items-center justify-content-between mb-3">
+            <div>
+                <h1 class="page-title">{{ action }} Equipment</h1>
+                <p class="page-subtitle">
+                    {% if action == 'Add' %}
+                        Add new hardware component to MySQL <code>Equipment</code> catalog
+                    {% else %}
+                        Update equipment specifications (ID: #{{ equipment.EquipID }})
+                    {% endif %}
+                </p>
+            </div>
+            <a href="{{ url_for('equipment_list') }}" class="btn btn-outline-secondary btn-sm">
+                <i class="bi bi-arrow-left me-1"></i> Back to Inventory
+            </a>
+        </div>
+
+        <div class="sql-query-box mb-4">
+            <span class="text-warning fw-bold">-- Target DBMS Operation:</span><br>
+            {% if action == 'Add' %}
+                INSERT INTO Equipment (EquipName, Type, Price)<br>
+                VALUES ('&lt;EquipName&gt;', '&lt;Type&gt;', &lt;Price&gt;);
+            {% else %}
+                UPDATE Equipment<br>
+                SET EquipName = '&lt;EquipName&gt;', Type = '&lt;Type&gt;', Price = &lt;Price&gt;<br>
+                WHERE EquipID = {{ equipment.EquipID }};
+            {% endif %}
+        </div>
+
+        <div class="form-card">
+            <form method="POST">
+                <div class="mb-3">
+                    <label for="equip_name" class="form-label">Equipment Name / Model <span class="text-danger">*</span></label>
+                    <div class="input-group">
+                        <span class="input-group-text"><i class="bi bi-cpu"></i></span>
+                        <input type="text" class="form-control" id="equip_name" name="equip_name" 
+                               value="{{ equipment.EquipName or '' }}" 
+                               placeholder="e.g. Loom Solar 540W Mono PERC Panel" required autofocus>
+                    </div>
+                </div>
+
+                <div class="mb-3">
+                    <label for="type" class="form-label">Equipment Type / Category <span class="text-danger">*</span></label>
+                    <select class="form-select" id="type" name="type" required>
+                        <option value="">-- Select Category --</option>
+                        <option value="Solar Panel" {% if equipment.Type == 'Solar Panel' %}selected{% endif %}>Solar Panel</option>
+                        <option value="Inverter" {% if equipment.Type == 'Inverter' %}selected{% endif %}>Inverter</option>
+                        <option value="Energy Storage" {% if equipment.Type == 'Energy Storage' %}selected{% endif %}>Energy Storage (Battery)</option>
+                        <option value="Mounting Hardware" {% if equipment.Type == 'Mounting Hardware' %}selected{% endif %}>Mounting Hardware</option>
+                        <option value="Metering Device" {% if equipment.Type == 'Metering Device' %}selected{% endif %}>Metering Device (Net Meter)</option>
+                        <option value="Electrical Safety" {% if equipment.Type == 'Electrical Safety' %}selected{% endif %}>Electrical Safety &amp; Protection</option>
+                        <option value="Cabling & Accessories" {% if equipment.Type == 'Cabling & Accessories' %}selected{% endif %}>Cabling &amp; Accessories</option>
+                    </select>
+                </div>
+
+                <div class="mb-4">
+                    <label for="price" class="form-label">Unit Price (₹ INR) <span class="text-danger">*</span></label>
+                    <div class="input-group">
+                        <span class="input-group-text">₹</span>
+                        <input type="number" step="0.01" class="form-control" id="price" name="price" 
+                               value="{{ equipment.Price or '' }}" 
+                               placeholder="18500.00" required>
+                    </div>
+                </div>
+
+                <div class="d-flex justify-content-end gap-2 pt-2 border-top">
+                    <a href="{{ url_for('equipment_list') }}" class="btn btn-light px-4">Cancel</a>
+                    <button type="submit" class="btn btn-primary-custom px-4">
+                        {% if action == 'Add' %}
+                            <i class="bi bi-check-circle-fill me-1"></i> Add Equipment (INSERT)
+                        {% else %}
+                            <i class="bi bi-arrow-repeat me-1"></i> Update Equipment (UPDATE)
+                        {% endif %}
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
