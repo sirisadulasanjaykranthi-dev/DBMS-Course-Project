@@ -1,0 +1,94 @@
+{% extends "base.html" %}
+
+{% block title %}Equipment Inventory{% endblock %}
+
+{% block content %}
+<div class="page-header-box d-flex flex-column flex-md-row align-items-md-center justify-content-between gap-3">
+    <div>
+        <h1 class="page-title">Equipment Inventory</h1>
+        <p class="page-subtitle">MySQL Table: <code>Equipment</code> &bull; Solar Panels, Inverters, Batteries, Mounting Hardware</p>
+    </div>
+    <div class="d-flex gap-2">
+        <a href="{{ url_for('equipment_add') }}" class="btn btn-primary-custom d-flex align-items-center">
+            <i class="bi bi-plus-circle-fill me-2"></i> Add Equipment
+        </a>
+    </div>
+</div>
+
+<div class="alert alert-secondary py-2 px-3 small d-flex align-items-center mb-3">
+    <i class="bi bi-info-circle-fill text-primary me-2 fs-5"></i>
+    <div>
+        <strong>DBMS Query in this view:</strong> 
+        <code>SELECT EquipID, EquipName, Type, Price FROM Equipment ORDER BY EquipID DESC;</code>
+    </div>
+</div>
+
+<div class="custom-card">
+    <div class="card-header-clean">
+        <div class="d-flex align-items-center gap-2">
+            <i class="bi bi-cpu-fill text-primary fs-5"></i>
+            <span class="fw-bold">All Solar Equipment Items ({{ equipment|length }})</span>
+        </div>
+        <div style="max-width: 300px;">
+            <input type="text" id="clientTableSearch" class="form-control form-control-sm" placeholder="Search equipment...">
+        </div>
+    </div>
+    <div class="table-responsive">
+        <table class="table table-custom table-hover mb-0">
+            <thead>
+                <tr>
+                    <th style="width: 100px;">Equip ID</th>
+                    <th>Equipment Name</th>
+                    <th>Hardware Type</th>
+                    <th>Unit Price (INR)</th>
+                    <th style="width: 150px;" class="text-center">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% if equipment %}
+                    {% for eq in equipment %}
+                    <tr class="data-search-row">
+                        <td>
+                            <span class="badge bg-dark-subtle text-dark border px-2 py-1 fw-bold">#{{ eq.EquipID }}</span>
+                        </td>
+                        <td class="fw-semibold text-primary-emphasis">{{ eq.EquipName }}</td>
+                        <td>
+                            <span class="badge bg-info-subtle text-info-emphasis border border-info-subtle">{{ eq.Type }}</span>
+                        </td>
+                        <td class="fw-bold text-dark">
+                            ₹{{ "{:,.2f}".format(eq.Price) }}
+                        </td>
+                        <td class="text-center">
+                            <div class="btn-group btn-group-sm">
+                                <a href="{{ url_for('equipment_edit', equip_id=eq.EquipID) }}" class="btn btn-outline-secondary" title="Edit Equipment">
+                                    <i class="bi bi-pencil-square"></i> Edit
+                                </a>
+                                <button type="button" class="btn btn-outline-danger"
+                                        data-bs-toggle="modal" 
+                                        data-bs-target="#deleteConfirmModal"
+                                        data-delete-url="{{ url_for('equipment_delete', equip_id=eq.EquipID) }}"
+                                        data-item-name="{{ eq.EquipName }}"
+                                        data-item-id="{{ eq.EquipID }}"
+                                        title="Delete equipment">
+                                    <i class="bi bi-trash"></i>
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                {% else %}
+                    <tr>
+                        <td colspan="5" class="text-center py-5 text-muted">
+                            <i class="bi bi-cpu fs-1 d-block mb-2 text-secondary"></i>
+                            <h5>No Equipment Records Found</h5>
+                            <a href="{{ url_for('equipment_add') }}" class="btn btn-primary-custom btn-sm mt-2">
+                                <i class="bi bi-plus-circle me-1"></i> Add First Item
+                            </a>
+                        </td>
+                    </tr>
+                {% endif %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}
