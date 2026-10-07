@@ -1,0 +1,96 @@
+{% extends "base.html" %}
+
+{% block title %}{{ action }} Employee{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-lg-7 col-xl-6">
+        <div class="page-header-box d-flex align-items-center justify-content-between mb-3">
+            <div>
+                <h1 class="page-title">{{ action }} Employee</h1>
+                <p class="page-subtitle">
+                    {% if action == 'Add' %}
+                        Register new technician or engineer in MySQL <code>Employee</code> table
+                    {% else %}
+                        Update staff details (ID: #{{ employee.EmpID }})
+                    {% endif %}
+                </p>
+            </div>
+            <a href="{{ url_for('employees_list') }}" class="btn btn-outline-secondary btn-sm">
+                <i class="bi bi-arrow-left me-1"></i> Back to List
+            </a>
+        </div>
+
+        <div class="sql-query-box mb-4">
+            <span class="text-warning fw-bold">-- Target DBMS Operation:</span><br>
+            {% if action == 'Add' %}
+                INSERT INTO Employee (Name, Role, Phone, Salary)<br>
+                VALUES ('&lt;Name&gt;', '&lt;Role&gt;', '&lt;Phone&gt;', &lt;Salary&gt;);
+            {% else %}
+                UPDATE Employee<br>
+                SET Name = '&lt;Name&gt;', Role = '&lt;Role&gt;', Phone = '&lt;Phone&gt;', Salary = &lt;Salary&gt;<br>
+                WHERE EmpID = {{ employee.EmpID }};
+            {% endif %}
+        </div>
+
+        <div class="form-card">
+            <form method="POST">
+                <div class="mb-3">
+                    <label for="name" class="form-label">Employee Name <span class="text-danger">*</span></label>
+                    <div class="input-group">
+                        <span class="input-group-text"><i class="bi bi-person"></i></span>
+                        <input type="text" class="form-control" id="name" name="name" 
+                               value="{{ employee.Name or '' }}" 
+                               placeholder="e.g. Ramesh Kumar" required autofocus>
+                    </div>
+                </div>
+
+                <div class="mb-3">
+                    <label for="role" class="form-label">Job Role / Designation <span class="text-danger">*</span></label>
+                    <select class="form-select" id="role" name="role" required>
+                        <option value="">-- Select Role --</option>
+                        <option value="Lead Solar Engineer" {% if employee.Role == 'Lead Solar Engineer' %}selected{% endif %}>Lead Solar Engineer</option>
+                        <option value="Installation Specialist" {% if employee.Role == 'Installation Specialist' %}selected{% endif %}>Installation Specialist</option>
+                        <option value="Field Maintenance Technician" {% if employee.Role == 'Field Maintenance Technician' %}selected{% endif %}>Field Maintenance Technician</option>
+                        <option value="Electrical Safety Inspector" {% if employee.Role == 'Electrical Safety Inspector' %}selected{% endif %}>Electrical Safety Inspector</option>
+                        <option value="Customer Support Coordinator" {% if employee.Role == 'Customer Support Coordinator' %}selected{% endif %}>Customer Support Coordinator</option>
+                        <option value="Solar Project Manager" {% if employee.Role == 'Solar Project Manager' %}selected{% endif %}>Solar Project Manager</option>
+                    </select>
+                </div>
+
+                <div class="row g-3 mb-4">
+                    <div class="col-md-6">
+                        <label for="phone" class="form-label">Phone Number <span class="text-danger">*</span></label>
+                        <div class="input-group">
+                            <span class="input-group-text"><i class="bi bi-telephone"></i></span>
+                            <input type="tel" class="form-control" id="phone" name="phone" 
+                                   value="{{ employee.Phone or '' }}" 
+                                   placeholder="e.g. 9898012345" required>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <label for="salary" class="form-label">Monthly Salary (₹ INR) <span class="text-danger">*</span></label>
+                        <div class="input-group">
+                            <span class="input-group-text">₹</span>
+                            <input type="number" step="0.01" class="form-control" id="salary" name="salary" 
+                                   value="{{ employee.Salary or '' }}" 
+                                   placeholder="45000.00" required>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="d-flex justify-content-end gap-2 pt-2 border-top">
+                    <a href="{{ url_for('employees_list') }}" class="btn btn-light px-4">Cancel</a>
+                    <button type="submit" class="btn btn-primary-custom px-4">
+                        {% if action == 'Add' %}
+                            <i class="bi bi-check-circle-fill me-1"></i> Add Employee (INSERT)
+                        {% else %}
+                            <i class="bi bi-arrow-repeat me-1"></i> Update Employee (UPDATE)
+                        {% endif %}
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
