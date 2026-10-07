@@ -1,0 +1,103 @@
+{% extends "base.html" %}
+
+{% block title %}Maintenance Records{% endblock %}
+
+{% block content %}
+<div class="page-header-box d-flex flex-column flex-md-row align-items-md-center justify-content-between gap-3">
+    <div>
+        <h1 class="page-title">Maintenance &amp; Service History</h1>
+        <p class="page-subtitle">MySQL Table: <code>Maintenance</code> &bull; Foreign Key: <code>InstallID</code> &rarr; Installation</p>
+    </div>
+    <div class="d-flex gap-2">
+        <a href="{{ url_for('maintenance_add') }}" class="btn btn-primary-custom d-flex align-items-center">
+            <i class="bi bi-wrench-adjustable me-2"></i> Schedule Maintenance
+        </a>
+    </div>
+</div>
+
+<div class="alert alert-secondary py-2 px-3 small d-flex align-items-center mb-3">
+    <i class="bi bi-info-circle-fill text-primary me-2 fs-5"></i>
+    <div>
+        <strong>Relational Query in this view:</strong> 
+        <code>SELECT m.*, c.Name AS CustomerName, i.Capacity FROM Maintenance m JOIN Installation i ON m.InstallID = i.InstallID JOIN Customer c ON i.CustomerID = c.CustomerID;</code>
+    </div>
+</div>
+
+<div class="custom-card">
+    <div class="card-header-clean">
+        <div class="d-flex align-items-center gap-2">
+            <i class="bi bi-wrench-adjustable text-danger fs-5"></i>
+            <span class="fw-bold">All Maintenance &amp; Repair Visits ({{ visits|length }})</span>
+        </div>
+        <div style="max-width: 300px;">
+            <input type="text" id="clientTableSearch" class="form-control form-control-sm" placeholder="Search maintenance...">
+        </div>
+    </div>
+    <div class="table-responsive">
+        <table class="table table-custom table-hover mb-0">
+            <thead>
+                <tr>
+                    <th style="width: 100px;">Maint ID</th>
+                    <th>Install Ref</th>
+                    <th>Customer Name</th>
+                    <th>Visit Date</th>
+                    <th>Work Description</th>
+                    <th>Service Cost</th>
+                    <th style="width: 150px;" class="text-center">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% if visits %}
+                    {% for v in visits %}
+                    <tr class="data-search-row">
+                        <td>
+                            <span class="badge bg-dark-subtle text-dark border px-2 py-1 fw-bold">#{{ v.MaintID }}</span>
+                        </td>
+                        <td>
+                            <a href="{{ url_for('installation_view', install_id=v.InstallID) }}" class="fw-semibold text-decoration-none">
+                                Installation #{{ v.InstallID }}
+                            </a>
+                            <div class="small text-muted">{{ v.Capacity }}</div>
+                        </td>
+                        <td class="fw-semibold text-primary-emphasis">{{ v.CustomerName }}</td>
+                        <td>
+                            <i class="bi bi-calendar-event text-muted me-1 small"></i>{{ v.VisitDate }}
+                        </td>
+                        <td class="small" style="max-width: 280px;">{{ v.WorkDescription }}</td>
+                        <td class="fw-bold text-dark">
+                            ₹{{ "{:,.2f}".format(v.Cost) }}
+                        </td>
+                        <td class="text-center">
+                            <div class="btn-group btn-group-sm">
+                                <a href="{{ url_for('maintenance_edit', maint_id=v.MaintID) }}" class="btn btn-outline-secondary" title="Edit Visit">
+                                    <i class="bi bi-pencil-square"></i> Edit
+                                </a>
+                                <button type="button" class="btn btn-outline-danger"
+                                        data-bs-toggle="modal" 
+                                        data-bs-target="#deleteConfirmModal"
+                                        data-delete-url="{{ url_for('maintenance_delete', maint_id=v.MaintID) }}"
+                                        data-item-name="Maintenance Visit #{{ v.MaintID }} ({{ v.CustomerName }})"
+                                        data-item-id="{{ v.MaintID }}"
+                                        title="Delete maintenance visit">
+                                    <i class="bi bi-trash"></i>
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                {% else %}
+                    <tr>
+                        <td colspan="7" class="text-center py-5 text-muted">
+                            <i class="bi bi-wrench fs-1 d-block mb-2 text-secondary"></i>
+                            <h5>No Maintenance Visits Found</h5>
+                            <a href="{{ url_for('maintenance_add') }}" class="btn btn-primary-custom btn-sm mt-2">
+                                <i class="bi bi-wrench-adjustable me-1"></i> Add First Visit
+                            </a>
+                        </td>
+                    </tr>
+                {% endif %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}
