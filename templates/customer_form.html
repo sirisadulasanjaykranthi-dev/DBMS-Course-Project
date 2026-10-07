@@ -1,0 +1,95 @@
+{% extends "base.html" %}
+
+{% block title %}{{ action }} Customer{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-lg-8 col-xl-7">
+        <!-- Page Header -->
+        <div class="page-header-box d-flex align-items-center justify-content-between mb-3">
+            <div>
+                <h1 class="page-title">{{ action }} Customer</h1>
+                <p class="page-subtitle">
+                    {% if action == 'Add' %}
+                        Register new client record in MySQL <code>Customer</code> table
+                    {% else %}
+                        Update existing customer record (ID: {{ customer.CustomerID }})
+                    {% endif %}
+                </p>
+            </div>
+            <a href="{{ url_for('customers_list') }}" class="btn btn-outline-secondary btn-sm">
+                <i class="bi bi-arrow-left me-1"></i> Back to List
+            </a>
+        </div>
+
+        <!-- SQL Operation Explanation Box (Great for Viva) -->
+        <div class="sql-query-box mb-4">
+            <span class="text-warning fw-bold">-- Target DBMS Operation:</span><br>
+            {% if action == 'Add' %}
+                INSERT INTO Customer (Name, Phone, Email, Address)<br>
+                VALUES ('&lt;Name&gt;', '&lt;Phone&gt;', '&lt;Email&gt;', '&lt;Address&gt;');
+            {% else %}
+                UPDATE Customer<br>
+                SET Name = '&lt;Name&gt;', Phone = '&lt;Phone&gt;', Email = '&lt;Email&gt;', Address = '&lt;Address&gt;'<br>
+                WHERE CustomerID = {{ customer.CustomerID }};
+            {% endif %}
+        </div>
+
+        <!-- Form Card -->
+        <div class="form-card">
+            <form method="POST" novalidate>
+                <div class="mb-3">
+                    <label for="name" class="form-label">Full Name <span class="text-danger">*</span></label>
+                    <div class="input-group">
+                        <span class="input-group-text"><i class="bi bi-person"></i></span>
+                        <input type="text" class="form-control" id="name" name="name" 
+                               value="{{ customer.Name or '' }}" 
+                               placeholder="e.g. Rahul Sharma" required autofocus>
+                    </div>
+                </div>
+
+                <div class="row g-3 mb-3">
+                    <div class="col-md-6">
+                        <label for="phone" class="form-label">Phone Number <span class="text-danger">*</span></label>
+                        <div class="input-group">
+                            <span class="input-group-text"><i class="bi bi-telephone"></i></span>
+                            <input type="tel" class="form-control" id="phone" name="phone" 
+                                   value="{{ customer.Phone or '' }}" 
+                                   placeholder="e.g. 9876543210" required>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <label for="email" class="form-label">Email Address <span class="text-danger">*</span></label>
+                        <div class="input-group">
+                            <span class="input-group-text"><i class="bi bi-envelope"></i></span>
+                            <input type="email" class="form-control" id="email" name="email" 
+                                   value="{{ customer.Email or '' }}" 
+                                   placeholder="e.g. rahul@gmail.com" required>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="mb-4">
+                    <label for="address" class="form-label">Residential / Site Address <span class="text-danger">*</span></label>
+                    <div class="input-group">
+                        <span class="input-group-text"><i class="bi bi-geo-alt"></i></span>
+                        <textarea class="form-control" id="address" name="address" rows="3" 
+                                  placeholder="e.g. Plot 104, Road No 12, Jubilee Hills, Hyderabad" required>{{ customer.Address or '' }}</textarea>
+                    </div>
+                </div>
+
+                <div class="d-flex justify-content-end gap-2 pt-2 border-top">
+                    <a href="{{ url_for('customers_list') }}" class="btn btn-light px-4">Cancel</a>
+                    <button type="submit" class="btn btn-primary-custom px-4">
+                        {% if action == 'Add' %}
+                            <i class="bi bi-check-circle-fill me-1"></i> Add Customer (INSERT)
+                        {% else %}
+                            <i class="bi bi-arrow-repeat me-1"></i> Update Customer (UPDATE)
+                        {% endif %}
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
