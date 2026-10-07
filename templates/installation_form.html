@@ -1,0 +1,124 @@
+{% extends "base.html" %}
+
+{% block title %}{{ action }} Installation{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-lg-8 col-xl-7">
+        <!-- Page Header -->
+        <div class="page-header-box d-flex align-items-center justify-content-between mb-3">
+            <div>
+                <h1 class="page-title">{{ action }} Installation</h1>
+                <p class="page-subtitle">
+                    {% if action == 'Add' %}
+                        Record a new solar installation project linked to Customer and Staff in MySQL
+                    {% else %}
+                        Update installation record (Project #{{ installation.InstallID }})
+                    {% endif %}
+                </p>
+            </div>
+            <a href="{{ url_for('installations_list') }}" class="btn btn-outline-secondary btn-sm">
+                <i class="bi bi-arrow-left me-1"></i> Back to List
+            </a>
+        </div>
+
+        <!-- SQL Query Box -->
+        <div class="sql-query-box mb-4">
+            <span class="text-warning fw-bold">-- Target DBMS Operation:</span><br>
+            {% if action == 'Add' %}
+                INSERT INTO Installation (CustomerID, EmpID, InstallationDate, Capacity, Status, Cost)<br>
+                VALUES (&lt;CustomerID&gt;, &lt;EmpID&gt;, '&lt;Date&gt;', '&lt;Capacity&gt;', '&lt;Status&gt;', &lt;Cost&gt;);
+            {% else %}
+                UPDATE Installation<br>
+                SET CustomerID = &lt;CustID&gt;, EmpID = &lt;EmpID&gt;, InstallationDate = '&lt;Date&gt;',<br>
+                    Capacity = '&lt;Cap&gt;', Status = '&lt;Stat&gt;', Cost = &lt;Cost&gt;<br>
+                WHERE InstallID = {{ installation.InstallID }};
+            {% endif %}
+        </div>
+
+        <div class="form-card">
+            <form method="POST">
+                <div class="row g-3 mb-3">
+                    <!-- Customer Dropdown (FK: CustomerID) -->
+                    <div class="col-md-6">
+                        <label for="customer_id" class="form-label">Customer (Foreign Key) <span class="text-danger">*</span></label>
+                        <select class="form-select" id="customer_id" name="customer_id" required>
+                            <option value="">-- Select Customer --</option>
+                            {% for c in customers %}
+                                <option value="{{ c.CustomerID }}" {% if installation.CustomerID|string == c.CustomerID|string %}selected{% endif %}>
+                                    {{ c.Name }} (ID: {{ c.CustomerID }})
+                                </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <!-- Employee Dropdown (FK: EmpID) -->
+                    <div class="col-md-6">
+                        <label for="emp_id" class="form-label">Assigned Technician (Foreign Key) <span class="text-danger">*</span></label>
+                        <select class="form-select" id="emp_id" name="emp_id" required>
+                            <option value="">-- Select Technician --</option>
+                            {% for e in employees %}
+                                <option value="{{ e.EmpID }}" {% if installation.EmpID|string == e.EmpID|string %}selected{% endif %}>
+                                    {{ e.Name }} - {{ e.Role }} (ID: {{ e.EmpID }})
+                                </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </div>
+
+                <div class="row g-3 mb-3">
+                    <!-- Installation Date -->
+                    <div class="col-md-6">
+                        <label for="installation_date" class="form-label">Installation Date <span class="text-danger">*</span></label>
+                        <input type="date" class="form-control" id="installation_date" name="installation_date" 
+                               value="{{ installation.InstallationDate or '' }}" required>
+                    </div>
+
+                    <!-- System Capacity -->
+                    <div class="col-md-6">
+                        <label for="capacity" class="form-label">System Capacity / Spec <span class="text-danger">*</span></label>
+                        <input type="text" class="form-control" id="capacity" name="capacity" 
+                               value="{{ installation.Capacity or '' }}" 
+                               placeholder="e.g. 5 kW On-Grid, 10 kW Hybrid" required>
+                    </div>
+                </div>
+
+                <div class="row g-3 mb-4">
+                    <!-- Status -->
+                    <div class="col-md-6">
+                        <label for="status" class="form-label">Project Status <span class="text-danger">*</span></label>
+                        <select class="form-select" id="status" name="status" required>
+                            <option value="Pending" {% if installation.Status == 'Pending' %}selected{% endif %}>Pending</option>
+                            <option value="Scheduled" {% if installation.Status == 'Scheduled' %}selected{% endif %}>Scheduled</option>
+                            <option value="In Progress" {% if installation.Status == 'In Progress' %}selected{% endif %}>In Progress</option>
+                            <option value="Completed" {% if installation.Status == 'Completed' %}selected{% endif %}>Completed</option>
+                        </select>
+                    </div>
+
+                    <!-- Project Cost -->
+                    <div class="col-md-6">
+                        <label for="cost" class="form-label">Total Cost (₹ INR) <span class="text-danger">*</span></label>
+                        <div class="input-group">
+                            <span class="input-group-text">₹</span>
+                            <input type="number" step="0.01" class="form-control" id="cost" name="cost" 
+                                   value="{{ installation.Cost or '' }}" 
+                                   placeholder="250000.00" required>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="d-flex justify-content-end gap-2 pt-2 border-top">
+                    <a href="{{ url_for('installations_list') }}" class="btn btn-light px-4">Cancel</a>
+                    <button type="submit" class="btn btn-primary-custom px-4">
+                        {% if action == 'Add' %}
+                            <i class="bi bi-check-circle-fill me-1"></i> Create Project (INSERT)
+                        {% else %}
+                            <i class="bi bi-arrow-repeat me-1"></i> Update Project (UPDATE)
+                        {% endif %}
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
