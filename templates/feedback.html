@@ -1,0 +1,104 @@
+{% extends "base.html" %}
+
+{% block title %}Customer Feedback{% endblock %}
+
+{% block content %}
+<div class="page-header-box d-flex flex-column flex-md-row align-items-md-center justify-content-between gap-3">
+    <div>
+        <h1 class="page-title">Customer Feedback &amp; Reviews</h1>
+        <p class="page-subtitle">MySQL Table: <code>Feedback</code> &bull; Foreign Key: <code>InstallID</code> &rarr; Installation &bull; Rating: 1 to 5 Stars</p>
+    </div>
+    <div class="d-flex gap-2">
+        <a href="{{ url_for('feedback_add') }}" class="btn btn-primary-custom d-flex align-items-center">
+            <i class="bi bi-star-fill me-2 text-warning"></i> Add Feedback
+        </a>
+    </div>
+</div>
+
+<div class="alert alert-secondary py-2 px-3 small d-flex align-items-center mb-3">
+    <i class="bi bi-info-circle-fill text-primary me-2 fs-5"></i>
+    <div>
+        <strong>Relational Query in this view:</strong> 
+        <code>SELECT f.*, c.Name AS CustomerName, i.Capacity FROM Feedback f JOIN Installation i ON f.InstallID = i.InstallID JOIN Customer c ON i.CustomerID = c.CustomerID ORDER BY f.FeedbackID DESC;</code>
+    </div>
+</div>
+
+<div class="custom-card">
+    <div class="card-header-clean">
+        <div class="d-flex align-items-center gap-2">
+            <i class="bi bi-chat-square-quote-fill text-warning fs-5"></i>
+            <span class="fw-bold">All Customer Feedback ({{ feedback|length }})</span>
+        </div>
+        <div style="max-width: 300px;">
+            <input type="text" id="clientTableSearch" class="form-control form-control-sm" placeholder="Search reviews...">
+        </div>
+    </div>
+    <div class="table-responsive">
+        <table class="table table-custom table-hover mb-0">
+            <thead>
+                <tr>
+                    <th style="width: 100px;">ID</th>
+                    <th>Installation Ref</th>
+                    <th>Customer Name</th>
+                    <th>Rating</th>
+                    <th>Comments &amp; Review</th>
+                    <th>Date Logged</th>
+                    <th style="width: 100px;" class="text-center">Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% if feedback %}
+                    {% for f in feedback %}
+                    <tr class="data-search-row">
+                        <td>
+                            <span class="badge bg-dark-subtle text-dark border px-2 py-1 fw-bold">#{{ f.FeedbackID }}</span>
+                        </td>
+                        <td>
+                            <a href="{{ url_for('installation_view', install_id=f.InstallID) }}" class="fw-semibold text-decoration-none">
+                                Project #{{ f.InstallID }}
+                            </a>
+                            <div class="small text-muted">{{ f.Capacity }}</div>
+                        </td>
+                        <td class="fw-semibold text-primary-emphasis">{{ f.CustomerName }}</td>
+                        <td>
+                            <div class="text-warning text-nowrap">
+                                {% for s in range(f.Rating) %}
+                                    <i class="bi bi-star-fill"></i>
+                                {% endfor %}
+                                {% for s in range(5 - f.Rating) %}
+                                    <i class="bi bi-star text-muted"></i>
+                                {% endfor %}
+                                <span class="ms-1 fw-bold text-dark small">({{ f.Rating }}/5)</span>
+                            </div>
+                        </td>
+                        <td class="small" style="max-width: 300px;">{{ f.Comments or 'No comments provided.' }}</td>
+                        <td class="small text-muted">{{ f.CreatedAt }}</td>
+                        <td class="text-center">
+                            <button type="button" class="btn btn-sm btn-outline-danger"
+                                    data-bs-toggle="modal" 
+                                    data-bs-target="#deleteConfirmModal"
+                                    data-delete-url="{{ url_for('feedback_delete', feedback_id=f.FeedbackID) }}"
+                                    data-item-name="Feedback from {{ f.CustomerName }}"
+                                    data-item-id="{{ f.FeedbackID }}"
+                                    title="Delete review">
+                                <i class="bi bi-trash"></i>
+                            </button>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                {% else %}
+                    <tr>
+                        <td colspan="7" class="text-center py-5 text-muted">
+                            <i class="bi bi-chat-square-dots fs-1 d-block mb-2 text-secondary"></i>
+                            <h5>No Feedback Reviews Found</h5>
+                            <a href="{{ url_for('feedback_add') }}" class="btn btn-primary-custom btn-sm mt-2">
+                                <i class="bi bi-star me-1"></i> Add First Review
+                            </a>
+                        </td>
+                    </tr>
+                {% endif %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}
