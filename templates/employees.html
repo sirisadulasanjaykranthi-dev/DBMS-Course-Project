@@ -1,0 +1,98 @@
+{% extends "base.html" %}
+
+{% block title %}Employees{% endblock %}
+
+{% block content %}
+<div class="page-header-box d-flex flex-column flex-md-row align-items-md-center justify-content-between gap-3">
+    <div>
+        <h1 class="page-title">Employee &amp; Staff Directory</h1>
+        <p class="page-subtitle">MySQL Table: <code>Employee</code> &bull; Solar Engineers, Technicians, Inspectors</p>
+    </div>
+    <div class="d-flex gap-2">
+        <a href="{{ url_for('employee_add') }}" class="btn btn-primary-custom d-flex align-items-center">
+            <i class="bi bi-person-plus-fill me-2"></i> Add Employee
+        </a>
+    </div>
+</div>
+
+<div class="alert alert-secondary py-2 px-3 small d-flex align-items-center mb-3">
+    <i class="bi bi-info-circle-fill text-primary me-2 fs-5"></i>
+    <div>
+        <strong>DBMS Query in this view:</strong> 
+        <code>SELECT EmpID, Name, Role, Phone, Salary FROM Employee ORDER BY EmpID DESC;</code>
+    </div>
+</div>
+
+<div class="custom-card">
+    <div class="card-header-clean">
+        <div class="d-flex align-items-center gap-2">
+            <i class="bi bi-person-badge-fill text-primary fs-5"></i>
+            <span class="fw-bold">All Employees ({{ employees|length }})</span>
+        </div>
+        <div style="max-width: 300px;">
+            <input type="text" id="clientTableSearch" class="form-control form-control-sm" placeholder="Search staff...">
+        </div>
+    </div>
+    <div class="table-responsive">
+        <table class="table table-custom table-hover mb-0">
+            <thead>
+                <tr>
+                    <th style="width: 100px;">Emp ID</th>
+                    <th>Name</th>
+                    <th>Role / Designation</th>
+                    <th>Phone</th>
+                    <th>Salary (Monthly)</th>
+                    <th style="width: 150px;" class="text-center">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% if employees %}
+                    {% for e in employees %}
+                    <tr class="data-search-row">
+                        <td>
+                            <span class="badge bg-dark-subtle text-dark border px-2 py-1 fw-bold">#{{ e.EmpID }}</span>
+                        </td>
+                        <td class="fw-semibold text-primary-emphasis">{{ e.Name }}</td>
+                        <td>
+                            <span class="badge bg-primary-subtle text-primary border border-primary-subtle px-2 py-1">{{ e.Role }}</span>
+                        </td>
+                        <td>
+                            <i class="bi bi-telephone text-muted me-1 small"></i>{{ e.Phone }}
+                        </td>
+                        <td class="fw-bold text-dark">
+                            ₹{{ "{:,.2f}".format(e.Salary) }}
+                        </td>
+                        <td class="text-center">
+                            <div class="btn-group btn-group-sm">
+                                <a href="{{ url_for('employee_edit', emp_id=e.EmpID) }}" class="btn btn-outline-secondary" title="Edit Employee">
+                                    <i class="bi bi-pencil-square"></i> Edit
+                                </a>
+                                <button type="button" class="btn btn-outline-danger"
+                                        data-bs-toggle="modal" 
+                                        data-bs-target="#deleteConfirmModal"
+                                        data-delete-url="{{ url_for('employee_delete', emp_id=e.EmpID) }}"
+                                        data-item-name="{{ e.Name }} ({{ e.Role }})"
+                                        data-item-id="{{ e.EmpID }}"
+                                        title="Delete employee">
+                                    <i class="bi bi-trash"></i>
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                {% else %}
+                    <tr>
+                        <td colspan="6" class="text-center py-5 text-muted">
+                            <i class="bi bi-person-x fs-1 d-block mb-2 text-secondary"></i>
+                            <h5>No Employees Found</h5>
+                            <a href="{{ url_for('employee_add') }}" class="btn btn-primary-custom btn-sm mt-2">
+                                <i class="bi bi-person-plus-fill me-1"></i> Add First Employee
+                            </a>
+                        </td>
+                    </tr>
+                {% endif %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}
