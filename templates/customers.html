@@ -1,0 +1,106 @@
+{% extends "base.html" %}
+
+{% block title %}Customers{% endblock %}
+
+{% block content %}
+<!-- Page Header -->
+<div class="page-header-box d-flex flex-column flex-md-row align-items-md-center justify-content-between gap-3">
+    <div>
+        <h1 class="page-title">Customer Management</h1>
+        <p class="page-subtitle">Real-time MySQL Table: <code>Customer</code> &bull; Supports INSERT, VIEW, UPDATE and DELETE</p>
+    </div>
+    <div class="d-flex gap-2">
+        <a href="{{ url_for('customer_add') }}" class="btn btn-primary-custom d-flex align-items-center">
+            <i class="bi bi-person-plus-fill me-2"></i> Add Customer
+        </a>
+    </div>
+</div>
+
+<!-- SQL Operation Banner for Presentation Clarity -->
+<div class="alert alert-secondary py-2 px-3 small d-flex align-items-center mb-3">
+    <i class="bi bi-info-circle-fill text-primary me-2 fs-5"></i>
+    <div>
+        <strong>DBMS Operation in this view:</strong> 
+        <code>SELECT CustomerID, Name, Phone, Email, Address FROM Customer ORDER BY CustomerID DESC;</code>
+    </div>
+</div>
+
+<!-- Table Card -->
+<div class="custom-card">
+    <div class="card-header-clean">
+        <div class="d-flex align-items-center gap-2">
+            <i class="bi bi-people-fill text-primary fs-5"></i>
+            <span class="fw-bold">All Registered Customers ({{ customers|length }})</span>
+        </div>
+        <div class="d-flex gap-2" style="max-width: 320px;">
+            <input type="text" id="clientTableSearch" class="form-control form-control-sm" placeholder="Filter customers...">
+        </div>
+    </div>
+    <div class="table-responsive">
+        <table class="table table-custom table-hover mb-0" id="customerTable">
+            <thead>
+                <tr>
+                    <th style="width: 110px;">Customer ID</th>
+                    <th>Name</th>
+                    <th>Phone</th>
+                    <th>Email</th>
+                    <th>Address</th>
+                    <th style="width: 170px;" class="text-center">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% if customers %}
+                    {% for c in customers %}
+                    <tr class="data-search-row">
+                        <td>
+                            <span class="badge bg-dark-subtle text-dark border px-2 py-1 fw-bold">#{{ c.CustomerID }}</span>
+                        </td>
+                        <td class="fw-semibold text-primary-emphasis">{{ c.Name }}</td>
+                        <td>
+                            <i class="bi bi-telephone text-muted me-1 small"></i>{{ c.Phone }}
+                        </td>
+                        <td>
+                            <i class="bi bi-envelope text-muted me-1 small"></i>{{ c.Email }}
+                        </td>
+                        <td class="text-secondary small">{{ c.Address }}</td>
+                        <td class="text-center">
+                            <div class="btn-group btn-group-sm" role="group">
+                                <!-- View Details -->
+                                <a href="{{ url_for('customer_view', customer_id=c.CustomerID) }}" class="btn btn-outline-info" title="View Customer Profile & History">
+                                    <i class="bi bi-eye"></i> View
+                                </a>
+                                <!-- Edit Record -->
+                                <a href="{{ url_for('customer_edit', customer_id=c.CustomerID) }}" class="btn btn-outline-secondary" title="Edit Customer Details">
+                                    <i class="bi bi-pencil-square"></i>
+                                </a>
+                                <!-- Delete Record (Triggers real MySQL DELETE) -->
+                                <button type="button" class="btn btn-outline-danger" 
+                                        data-bs-toggle="modal" 
+                                        data-bs-target="#deleteConfirmModal"
+                                        data-delete-url="{{ url_for('customer_delete', customer_id=c.CustomerID) }}"
+                                        data-item-name="{{ c.Name }}"
+                                        data-item-id="{{ c.CustomerID }}"
+                                        title="Delete customer permanently from MySQL">
+                                    <i class="bi bi-trash"></i>
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                {% else %}
+                    <tr>
+                        <td colspan="6" class="text-center py-5 text-muted">
+                            <i class="bi bi-person-x fs-1 d-block mb-2 text-secondary"></i>
+                            <h5>No Customers Found in Database</h5>
+                            <p class="small text-muted mb-3">The MySQL Customer table currently contains 0 records.</p>
+                            <a href="{{ url_for('customer_add') }}" class="btn btn-primary-custom btn-sm">
+                                <i class="bi bi-person-plus-fill me-1"></i> Add First Customer
+                            </a>
+                        </td>
+                    </tr>
+                {% endif %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}
