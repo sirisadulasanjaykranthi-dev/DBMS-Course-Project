@@ -1,0 +1,120 @@
+{% extends "base.html" %}
+
+{% block title %}Payments{% endblock %}
+
+{% block content %}
+<div class="page-header-box d-flex flex-column flex-md-row align-items-md-center justify-content-between gap-3">
+    <div>
+        <h1 class="page-title">Payment Transactions &amp; Receipts</h1>
+        <p class="page-subtitle">MySQL Table: <code>Payment</code> &bull; Foreign Key: <code>CustomerID</code> &rarr; Customer &bull; Cash, UPI, Card, Bank Transfer</p>
+    </div>
+    <div class="d-flex gap-2">
+        <a href="{{ url_for('payment_add') }}" class="btn btn-primary-custom d-flex align-items-center">
+            <i class="bi bi-cash-stack me-2"></i> Record Payment
+        </a>
+    </div>
+</div>
+
+<div class="row g-3 mb-3">
+    <div class="col-md-8">
+        <div class="alert alert-secondary py-2 px-3 small d-flex align-items-center mb-0 h-100">
+            <i class="bi bi-info-circle-fill text-primary me-2 fs-5"></i>
+            <div>
+                <strong>DBMS Query in this view:</strong> 
+                <code>SELECT p.*, c.Name AS CustomerName FROM Payment p JOIN Customer c ON p.CustomerID = c.CustomerID ORDER BY p.PaymentID DESC;</code>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card border-0 shadow-sm bg-success text-white p-2 text-center rounded-3">
+            <span class="small text-white-50 text-uppercase fw-bold">Total Ledger Collected</span>
+            <span class="fs-4 fw-bold">₹{{ "{:,.2f}".format(total_sum) }}</span>
+        </div>
+    </div>
+</div>
+
+<div class="custom-card">
+    <div class="card-header-clean">
+        <div class="d-flex align-items-center gap-2">
+            <i class="bi bi-cash-coin text-success fs-5"></i>
+            <span class="fw-bold">All Payment Records ({{ payments|length }})</span>
+        </div>
+        <div style="max-width: 300px;">
+            <input type="text" id="clientTableSearch" class="form-control form-control-sm" placeholder="Search payments...">
+        </div>
+    </div>
+    <div class="table-responsive">
+        <table class="table table-custom table-hover mb-0">
+            <thead>
+                <tr>
+                    <th style="width: 100px;">Pay ID</th>
+                    <th>Customer Name</th>
+                    <th>Contact Phone</th>
+                    <th>Amount Paid</th>
+                    <th>Payment Date</th>
+                    <th>Payment Mode</th>
+                    <th style="width: 150px;" class="text-center">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% if payments %}
+                    {% for p in payments %}
+                    <tr class="data-search-row">
+                        <td>
+                            <span class="badge bg-dark-subtle text-dark border px-2 py-1 fw-bold">#{{ p.PaymentID }}</span>
+                        </td>
+                        <td class="fw-semibold text-primary-emphasis">{{ p.CustomerName }}</td>
+                        <td>
+                            <i class="bi bi-telephone text-muted me-1 small"></i>{{ p.CustomerPhone }}
+                        </td>
+                        <td class="fw-bold text-success fs-6">
+                            ₹{{ "{:,.2f}".format(p.Amount) }}
+                        </td>
+                        <td>
+                            <i class="bi bi-calendar3 text-muted me-1 small"></i>{{ p.PaymentDate }}
+                        </td>
+                        <td>
+                            {% if p.Mode == 'UPI' %}
+                                <span class="badge bg-warning-subtle text-warning-emphasis border border-warning-subtle px-2 py-1">UPI</span>
+                            {% elif p.Mode == 'Bank Transfer' %}
+                                <span class="badge bg-primary-subtle text-primary border border-primary-subtle px-2 py-1">Bank Transfer</span>
+                            {% elif p.Mode == 'Card' %}
+                                <span class="badge bg-info-subtle text-info border border-info-subtle px-2 py-1">Card</span>
+                            {% else %}
+                                <span class="badge bg-secondary-subtle text-secondary border px-2 py-1">{{ p.Mode }}</span>
+                            {% endif %}
+                        </td>
+                        <td class="text-center">
+                            <div class="btn-group btn-group-sm">
+                                <a href="{{ url_for('payment_edit', payment_id=p.PaymentID) }}" class="btn btn-outline-secondary" title="Edit Payment">
+                                    <i class="bi bi-pencil-square"></i> Edit
+                                </a>
+                                <button type="button" class="btn btn-outline-danger"
+                                        data-bs-toggle="modal" 
+                                        data-bs-target="#deleteConfirmModal"
+                                        data-delete-url="{{ url_for('payment_delete', payment_id=p.PaymentID) }}"
+                                        data-item-name="Payment of ₹{{ p.Amount }} ({{ p.CustomerName }})"
+                                        data-item-id="{{ p.PaymentID }}"
+                                        title="Delete payment">
+                                    <i class="bi bi-trash"></i>
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                {% else %}
+                    <tr>
+                        <td colspan="7" class="text-center py-5 text-muted">
+                            <i class="bi bi-cash-stack fs-1 d-block mb-2 text-secondary"></i>
+                            <h5>No Payment Records Found</h5>
+                            <a href="{{ url_for('payment_add') }}" class="btn btn-primary-custom btn-sm mt-2">
+                                <i class="bi bi-cash-stack me-1"></i> Record First Payment
+                            </a>
+                        </td>
+                    </tr>
+                {% endif %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}
