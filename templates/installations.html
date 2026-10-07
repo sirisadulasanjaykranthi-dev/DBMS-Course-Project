@@ -1,0 +1,124 @@
+{% extends "base.html" %}
+
+{% block title %}Installations{% endblock %}
+
+{% block content %}
+<div class="page-header-box d-flex flex-column flex-md-row align-items-md-center justify-content-between gap-3">
+    <div>
+        <h1 class="page-title">Installation Projects</h1>
+        <p class="page-subtitle">Relational MySQL Table: <code>Installation</code> &bull; Foreign Keys: <code>CustomerID</code> &rarr; Customer, <code>EmpID</code> &rarr; Employee</p>
+    </div>
+    <div class="d-flex gap-2">
+        <a href="{{ url_for('installation_add') }}" class="btn btn-primary-custom d-flex align-items-center">
+            <i class="bi bi-plus-circle-fill me-2"></i> New Installation
+        </a>
+    </div>
+</div>
+
+<!-- SQL JOIN Notice -->
+<div class="alert alert-secondary py-2 px-3 small d-flex align-items-center mb-3">
+    <i class="bi bi-diagram-3-fill text-primary me-2 fs-5"></i>
+    <div>
+        <strong>Relational Query in this view:</strong> 
+        <code>SELECT i.*, c.Name AS CustomerName, e.Name AS EmployeeName FROM Installation i JOIN Customer c ON i.CustomerID = c.CustomerID JOIN Employee e ON i.EmpID = e.EmpID;</code>
+    </div>
+</div>
+
+<!-- Table Card -->
+<div class="custom-card">
+    <div class="card-header-clean">
+        <div class="d-flex align-items-center gap-2">
+            <i class="bi bi-tools text-primary fs-5"></i>
+            <span class="fw-bold">All Solar Installation Projects ({{ installations|length }})</span>
+        </div>
+        <div style="max-width: 300px;">
+            <input type="text" id="clientTableSearch" class="form-control form-control-sm" placeholder="Search projects...">
+        </div>
+    </div>
+    <div class="table-responsive">
+        <table class="table table-custom table-hover mb-0">
+            <thead>
+                <tr>
+                    <th style="width: 100px;">Install ID</th>
+                    <th>Customer</th>
+                    <th>Technician / Engineer</th>
+                    <th>Installation Date</th>
+                    <th>Capacity</th>
+                    <th>Status</th>
+                    <th>Cost</th>
+                    <th style="width: 170px;" class="text-center">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% if installations %}
+                    {% for inst in installations %}
+                    <tr class="data-search-row">
+                        <td>
+                            <span class="badge bg-dark-subtle text-dark border px-2 py-1 fw-bold">#{{ inst.InstallID }}</span>
+                        </td>
+                        <td>
+                            <div class="fw-semibold text-primary-emphasis">{{ inst.CustomerName }}</div>
+                            <small class="text-muted"><i class="bi bi-telephone me-1"></i>{{ inst.CustomerPhone }}</small>
+                        </td>
+                        <td>
+                            <div class="fw-semibold">{{ inst.EmployeeName }}</div>
+                            <small class="text-muted">{{ inst.EmployeeRole }}</small>
+                        </td>
+                        <td>
+                            <i class="bi bi-calendar3 text-muted me-1 small"></i>{{ inst.InstallationDate }}
+                        </td>
+                        <td>
+                            <span class="badge bg-secondary-subtle text-secondary-emphasis">{{ inst.Capacity }}</span>
+                        </td>
+                        <td>
+                            {% if inst.Status == 'Completed' %}
+                                <span class="badge badge-status status-completed">Completed</span>
+                            {% elif inst.Status == 'In Progress' %}
+                                <span class="badge badge-status status-inprogress">In Progress</span>
+                            {% elif inst.Status == 'Pending' %}
+                                <span class="badge badge-status status-pending">Pending</span>
+                            {% else %}
+                                <span class="badge badge-status status-scheduled">{{ inst.Status }}</span>
+                            {% endif %}
+                        </td>
+                        <td class="fw-bold text-dark">
+                            ₹{{ "{:,.2f}".format(inst.Cost) }}
+                        </td>
+                        <td class="text-center">
+                            <div class="btn-group btn-group-sm">
+                                <a href="{{ url_for('installation_view', install_id=inst.InstallID) }}" class="btn btn-outline-info" title="View Project Details">
+                                    <i class="bi bi-eye"></i> View
+                                </a>
+                                <a href="{{ url_for('installation_edit', install_id=inst.InstallID) }}" class="btn btn-outline-secondary" title="Edit Installation">
+                                    <i class="bi bi-pencil-square"></i>
+                                </a>
+                                <button type="button" class="btn btn-outline-danger"
+                                        data-bs-toggle="modal" 
+                                        data-bs-target="#deleteConfirmModal"
+                                        data-delete-url="{{ url_for('installation_delete', install_id=inst.InstallID) }}"
+                                        data-item-name="Installation Project ({{ inst.CustomerName }})"
+                                        data-item-id="{{ inst.InstallID }}"
+                                        title="Delete installation">
+                                    <i class="bi bi-trash"></i>
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                {% else %}
+                    <tr>
+                        <td colspan="8" class="text-center py-5 text-muted">
+                            <i class="bi bi-inbox fs-1 d-block mb-2 text-secondary"></i>
+                            <h5>No Installation Projects Recorded</h5>
+                            <p class="small text-muted mb-3">Create your first installation using the button below.</p>
+                            <a href="{{ url_for('installation_add') }}" class="btn btn-primary-custom btn-sm">
+                                <i class="bi bi-plus-circle me-1"></i> Add Installation
+                            </a>
+                        </td>
+                    </tr>
+                {% endif %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}
