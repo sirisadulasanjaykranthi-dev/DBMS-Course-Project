@@ -1,0 +1,200 @@
+{% extends "base.html" %}
+
+{% block title %}MySQL Database Connection &amp; Status{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-lg-10 col-xl-9">
+        <!-- Page Header -->
+        <div class="page-header-box d-flex flex-column flex-md-row align-items-md-center justify-content-between gap-3 mb-4">
+            <div>
+                <h1 class="page-title">MySQL Database Configuration &amp; Health</h1>
+                <p class="page-subtitle">Real-time status of connection to MySQL Server and table validation</p>
+            </div>
+            <a href="{{ url_for('dashboard') }}" class="btn btn-outline-secondary btn-sm">
+                <i class="bi bi-speedometer2 me-1"></i> Back to Dashboard
+            </a>
+        </div>
+
+        <!-- Connection Status Card -->
+        <div class="custom-card mb-4">
+            <div class="card-header-clean d-flex justify-content-between align-items-center">
+                <div class="d-flex align-items-center gap-2">
+                    <i class="bi bi-hdd-network-fill text-primary fs-5"></i>
+                    <h5 class="mb-0 fw-bold">Live MySQL Server Connection Details</h5>
+                </div>
+                {% if status and db_exists %}
+                    <span class="badge bg-success py-2 px-3"><i class="bi bi-check-circle-fill me-1"></i> Connected &amp; Active</span>
+                {% elif status and not db_exists %}
+                    <span class="badge bg-warning text-dark py-2 px-3"><i class="bi bi-exclamation-triangle-fill me-1"></i> Database Not Created</span>
+                {% else %}
+                    <span class="badge bg-danger py-2 px-3"><i class="bi bi-x-circle-fill me-1"></i> Connection Error</span>
+                {% endif %}
+            </div>
+            <div class="p-4">
+                <div class="row g-3 mb-3">
+                    <div class="col-md-3">
+                        <div class="p-3 bg-light rounded border">
+                            <span class="text-muted small text-uppercase fw-semibold d-block">Host</span>
+                            <strong class="font-monospace">{{ host }}</strong>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="p-3 bg-light rounded border">
+                            <span class="text-muted small text-uppercase fw-semibold d-block">Port</span>
+                            <strong class="font-monospace">{{ port }}</strong>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="p-3 bg-light rounded border">
+                            <span class="text-muted small text-uppercase fw-semibold d-block">MySQL User</span>
+                            <strong class="font-monospace">{{ user }}</strong>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="p-3 bg-light rounded border">
+                            <span class="text-muted small text-uppercase fw-semibold d-block">Target DB</span>
+                            <strong class="font-monospace">{{ db_name }}</strong>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="p-3 rounded border {% if status and db_exists %}bg-success-subtle text-success-emphasis border-success{% else %}bg-warning-subtle text-warning-emphasis border-warning{% endif %}">
+                    <div class="d-flex align-items-center gap-2">
+                        <i class="bi {% if status and db_exists %}bi-check-circle-fill text-success{% else %}bi-exclamation-triangle-fill text-warning{% endif %} fs-4"></i>
+                        <div>
+                            <strong>Status Message:</strong> {{ msg }}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Table Verification & Count Table -->
+        <div class="custom-card mb-4">
+            <div class="card-header-clean d-flex justify-content-between align-items-center">
+                <div class="d-flex align-items-center gap-2">
+                    <i class="bi bi-table text-warning fs-5"></i>
+                    <h5 class="mb-0 fw-bold">Verified Relational Tables &amp; Record Counts</h5>
+                </div>
+                <span class="badge bg-secondary-subtle text-dark border">InnoDB Engine</span>
+            </div>
+            <div class="p-0">
+                <div class="table-responsive">
+                    <table class="table table-custom table-hover mb-0">
+                        <thead>
+                            <tr>
+                                <th>Table Name</th>
+                                <th>Primary Key</th>
+                                <th>Foreign Key(s)</th>
+                                <th>Referential Action</th>
+                                <th class="text-center">Live Record Count</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td class="fw-bold"><i class="bi bi-people me-2 text-primary"></i>Customer</td>
+                                <td><code>CustomerID</code></td>
+                                <td class="text-muted">None (Master)</td>
+                                <td>-</td>
+                                <td class="text-center"><span class="badge bg-primary px-3 py-1">{{ table_counts.get('Customer', 0) }}</span></td>
+                            </tr>
+                            <tr>
+                                <td class="fw-bold"><i class="bi bi-person-badge me-2 text-purple"></i>Employee</td>
+                                <td><code>EmpID</code></td>
+                                <td class="text-muted">None (Master)</td>
+                                <td>-</td>
+                                <td class="text-center"><span class="badge bg-primary px-3 py-1">{{ table_counts.get('Employee', 0) }}</span></td>
+                            </tr>
+                            <tr>
+                                <td class="fw-bold"><i class="bi bi-cpu me-2 text-indigo"></i>Equipment</td>
+                                <td><code>EquipID</code></td>
+                                <td class="text-muted">None (Master)</td>
+                                <td>-</td>
+                                <td class="text-center"><span class="badge bg-primary px-3 py-1">{{ table_counts.get('Equipment', 0) }}</span></td>
+                            </tr>
+                            <tr>
+                                <td class="fw-bold"><i class="bi bi-tools me-2 text-warning"></i>Installation</td>
+                                <td><code>InstallID</code></td>
+                                <td><code>CustomerID</code>, <code>EmpID</code></td>
+                                <td><span class="badge bg-light text-dark border">CASCADE / RESTRICT</span></td>
+                                <td class="text-center"><span class="badge bg-primary px-3 py-1">{{ table_counts.get('Installation', 0) }}</span></td>
+                            </tr>
+                            <tr>
+                                <td class="fw-bold"><i class="bi bi-wrench me-2 text-rose"></i>Maintenance</td>
+                                <td><code>MaintID</code></td>
+                                <td><code>InstallID</code></td>
+                                <td><span class="badge bg-light text-dark border">CASCADE</span></td>
+                                <td class="text-center"><span class="badge bg-primary px-3 py-1">{{ table_counts.get('Maintenance', 0) }}</span></td>
+                            </tr>
+                            <tr>
+                                <td class="fw-bold"><i class="bi bi-cash me-2 text-success"></i>Payment</td>
+                                <td><code>PaymentID</code></td>
+                                <td><code>CustomerID</code></td>
+                                <td><span class="badge bg-light text-dark border">CASCADE</span></td>
+                                <td class="text-center"><span class="badge bg-primary px-3 py-1">{{ table_counts.get('Payment', 0) }}</span></td>
+                            </tr>
+                            <tr>
+                                <td class="fw-bold"><i class="bi bi-star me-2 text-warning"></i>Feedback</td>
+                                <td><code>FeedbackID</code></td>
+                                <td><code>InstallID</code></td>
+                                <td><span class="badge bg-light text-dark border">CASCADE</span></td>
+                                <td class="text-center"><span class="badge bg-primary px-3 py-1">{{ table_counts.get('Feedback', 0) }}</span></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Setup / Reset Database Card -->
+        <div class="custom-card mb-4 border-warning">
+            <div class="card-header-clean bg-light d-flex justify-content-between align-items-center">
+                <div class="d-flex align-items-center gap-2">
+                    <i class="bi bi-database-fill-gear text-warning fs-5"></i>
+                    <h5 class="mb-0 fw-bold">One-Click Database Setup &amp; Re-seed</h5>
+                </div>
+            </div>
+            <div class="p-4">
+                <p class="text-muted mb-3">
+                    If you are demonstrating before examiners or setting up a fresh demonstration environment, you can initialize or reset the database directly. This runs:
+                </p>
+                <ol class="small text-muted mb-4">
+                    <li><code>schema.sql</code> &mdash; Creates the database <code>{{ db_name }}</code> and all 7 tables with foreign keys and check constraints.</li>
+                    <li><code>seed.sql</code> &mdash; Populates realistic initial customer, technician, project, maintenance, and payment records.</li>
+                </ol>
+
+                <form method="POST" onsubmit="return confirm('Initialize/Reset MySQL database now? This will execute schema.sql and seed.sql.');">
+                    <input type="hidden" name="action" value="init">
+                    <button type="submit" class="btn btn-warning px-4 py-2 fw-semibold shadow-sm">
+                        <i class="bi bi-arrow-clockwise me-1"></i> Run schema.sql &amp; seed.sql Now
+                    </button>
+                    <a href="https://dev.mysql.com/doc/workbench/en/" target="_blank" class="btn btn-outline-secondary px-3 py-2 ms-2">
+                        <i class="bi bi-box-arrow-up-right me-1"></i> Open in MySQL Workbench
+                    </a>
+                </form>
+            </div>
+        </div>
+
+        <!-- Configuration Helper -->
+        <div class="custom-card mb-4">
+            <div class="card-header-clean d-flex align-items-center gap-2">
+                <i class="bi bi-gear-fill text-secondary fs-5"></i>
+                <h5 class="mb-0 fw-bold">How to update MySQL Password</h5>
+            </div>
+            <div class="p-4">
+                <p class="mb-2">Your MySQL credentials can be adjusted in the <code>.env</code> file in the project folder:</p>
+                <div class="sql-query-box mb-3">
+                    <pre class="mb-0 text-white font-monospace"><code># .env file
+MYSQL_HOST=localhost
+MYSQL_PORT=3306
+MYSQL_USER=root
+MYSQL_PASSWORD=your_actual_mysql_root_password
+MYSQL_DATABASE=solar_service_db</code></pre>
+                </div>
+                <p class="small text-muted mb-0">Alternatively, you can edit <code>database.py</code> directly.</p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
