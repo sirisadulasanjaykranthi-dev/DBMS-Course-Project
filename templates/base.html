@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}SolarOps DBMS{% endblock %} - Solar Installation & Maintenance Management</title>
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Bootstrap Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+
+    <!-- Top Navigation Bar -->
+    <nav class="navbar navbar-expand-lg navbar-dark navbar-custom sticky-top">
+        <div class="container-fluid px-4">
+            <a class="navbar-brand d-flex align-items-center" href="{{ url_for('dashboard') }}">
+                <i class="bi bi-sun-fill text-warning fs-3 me-2"></i>
+                <span>SolarOps<span class="text-warning">DBMS</span></span>
+                <span class="brand-badge d-none d-sm-inline">Presentation-III</span>
+            </a>
+            
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#solarNavbar" aria-controls="solarNavbar" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+
+            <div class="collapse navbar-collapse" id="solarNavbar">
+                <ul class="navbar-nav me-auto mb-2 mb-lg-0 ms-lg-3">
+                    <li class="nav-item">
+                        <a class="nav-link {% if request.endpoint == 'dashboard' %}active{% endif %}" href="{{ url_for('dashboard') }}">
+                            <i class="bi bi-speedometer2 me-1"></i> Dashboard
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link {% if request.endpoint in ['customers_list', 'customer_add', 'customer_edit', 'customer_view'] %}active{% endif %}" href="{{ url_for('customers_list') }}">
+                            <i class="bi bi-people-fill me-1"></i> Customers
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link {% if request.endpoint in ['employees_list', 'employee_add', 'employee_edit'] %}active{% endif %}" href="{{ url_for('employees_list') }}">
+                            <i class="bi bi-person-badge-fill me-1"></i> Employees
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link {% if request.endpoint in ['installations_list', 'installation_add', 'installation_edit', 'installation_view'] %}active{% endif %}" href="{{ url_for('installations_list') }}">
+                            <i class="bi bi-tools me-1"></i> Installations
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link {% if request.endpoint in ['equipment_list', 'equipment_add', 'equipment_edit'] %}active{% endif %}" href="{{ url_for('equipment_list') }}">
+                            <i class="bi bi-cpu-fill me-1"></i> Equipment
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link {% if request.endpoint in ['maintenance_list', 'maintenance_add', 'maintenance_edit'] %}active{% endif %}" href="{{ url_for('maintenance_list') }}">
+                            <i class="bi bi-wrench-adjustable me-1"></i> Maintenance
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link {% if request.endpoint in ['payments_list', 'payment_add', 'payment_edit'] %}active{% endif %}" href="{{ url_for('payments_list') }}">
+                            <i class="bi bi-cash-stack me-1"></i> Payments
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link {% if request.endpoint in ['feedback_list', 'feedback_add'] %}active{% endif %}" href="{{ url_for('feedback_list') }}">
+                            <i class="bi bi-chat-square-quote-fill me-1"></i> Feedback
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link text-warning {% if request.endpoint == 'reports_page' %}active{% endif %}" href="{{ url_for('reports_page') }}">
+                            <i class="bi bi-terminal-fill me-1"></i> SQL Lab
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link text-info {% if request.endpoint == 'random_data_page' %}active{% endif %}" href="{{ url_for('random_data_page') }}">
+                            <i class="bi bi-shuffle me-1"></i> Random SQL Data
+                        </a>
+                    </li>
+                </ul>
+
+                <!-- Live MySQL Connection Badge & Setup -->
+                <div class="d-flex align-items-center">
+                    {% if db_connected and db_exists %}
+                        <a href="{{ url_for('db_setup') }}" class="badge bg-success text-decoration-none py-2 px-3 me-2 d-flex align-items-center" title="Connected to MySQL Database: {{ db_name }}">
+                            <i class="bi bi-database-check me-1 fs-6"></i> MySQL: {{ db_name }}
+                        </a>
+                    {% else %}
+                        <a href="{{ url_for('db_setup') }}" class="badge bg-danger text-decoration-none py-2 px-3 me-2 d-flex align-items-center" title="{{ db_status_msg }}">
+                            <i class="bi bi-database-exclamation me-1 fs-6"></i> MySQL Setup Needed
+                        </a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content Area -->
+    <main class="container-fluid px-4 py-4">
+        <!-- Flash Alert Messages -->
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="alert alert-{{ category }} alert-dismissible fade show d-flex align-items-center shadow-sm" role="alert">
+                        {% if category == 'success' %}
+                            <i class="bi bi-check-circle-fill me-2 fs-5 text-success"></i>
+                        {% elif category == 'danger' %}
+                            <i class="bi bi-exclamation-octagon-fill me-2 fs-5 text-danger"></i>
+                        {% elif category == 'warning' %}
+                            <i class="bi bi-exclamation-triangle-fill me-2 fs-5 text-warning"></i>
+                        {% else %}
+                            <i class="bi bi-info-circle-fill me-2 fs-5 text-info"></i>
+                        {% endif %}
+                        <div>{{ message }}</div>
+                        <button type="button" class="btn-close ms-auto" data-bs-dismiss="alert" aria-label="Close"></button>
+                    </div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+
+        {% block content %}{% endblock %}
+    </main>
+
+    <!-- Global Delete Confirmation Modal -->
+    <div class="modal fade" id="deleteConfirmModal" tabindex="-1" aria-labelledby="deleteModalTitle" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content border-0 shadow">
+                <div class="modal-header bg-danger text-white">
+                    <h5 class="modal-title d-flex align-items-center" id="deleteModalTitle">
+                        <i class="bi bi-exclamation-triangle-fill me-2"></i> Confirm Database Deletion
+                    </h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body py-4">
+                    <p class="mb-2">Are you sure you want to permanently delete this record from MySQL?</p>
+                    <div class="p-3 bg-light rounded border">
+                        <strong id="deleteModalItemName" class="text-danger">Record</strong> 
+                        <span id="deleteModalItemId" class="text-muted ms-1"></span>
+                    </div>
+                    <div class="alert alert-warning mt-3 mb-0 py-2 small">
+                        <i class="bi bi-info-circle me-1"></i> 
+                        <strong>DBMS Operation:</strong> Executes SQL <code>DELETE FROM &lt;table&gt; WHERE id = ?</code> and commits transaction.
+                    </div>
+                </div>
+                <div class="modal-footer bg-light">
+                    <button type="button" class="btn btn-secondary px-3" data-bs-dismiss="modal">Cancel</button>
+                    <form id="deleteModalForm" method="POST" style="display:inline;">
+                        <button type="submit" class="btn btn-danger px-4">
+                            <i class="bi bi-trash-fill me-1"></i> Delete Record
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer>
+        <div class="container-fluid px-4 d-flex flex-column flex-md-row align-items-center justify-content-between">
+            <div>
+                <strong>Solar Installation &amp; Maintenance Service Management System</strong>
+                <span class="text-muted d-block d-md-inline ms-md-2">DBMS Presentation-III (Flask + MySQL)</span>
+            </div>
+            <div class="mt-2 mt-md-0 text-muted">
+                <span>Database: <code>mysql-connector-python</code> &bull; MySQL Server 8.0</span>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Bootstrap 5 Bundle JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- Custom JS -->
+    <script src="{{ url_for('static', filename='js/script.js') }}"></script>
+    {% block extra_js %}{% endblock %}
+</body>
+</html>
